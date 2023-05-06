@@ -144,6 +144,7 @@ class Game {
     movePlayer(direction: EnumMoveDirection): void {
         agent.move(direction);
         this._mapHidden[agent._position.x][agent._position.y] = false;
+        wumpusMove(wumpus);
         
         let funcLose = (function(item: Item) { return (item.isDeadly()); });
         let funcWin = (function(item: Item) { return (item.isVictory()); });
@@ -179,6 +180,8 @@ G - Gold`;
             if (this._items[i] instanceof Wumpus) char = 'W';
             if (this._items[i] instanceof Pit) char = 'P';
             if (this._items[i] instanceof Gold) char = 'G';
+            if (this._items[i] instanceof Stench) char = 'S';
+            if (this._items[i] instanceof Wind) char = 'B';
             info[this._items[i]._position.x][this._items[i]._position.y] += char;
         }
         // Show info var
@@ -190,9 +193,8 @@ G - Gold`;
                 for (let k = 0; k < 5 - infoFinalLength; k++) {
                     infoFinal += '_';
                 }
-                //! Adding seeing adjacent ones if XXX then S or B
-                line += (this._mapHidden[j][i] ? '?????' : infoFinal) + ' ';
-                //line += (this._mapHidden[j][i] ? infoFinal : infoFinal) + ' ';
+                //line += (this._mapHidden[j][i] ? '?????' : infoFinal) + ' ';
+                line += (this._mapHidden[j][i] ? infoFinal : infoFinal) + ' ';
             }
             console.log(line + (i == 0 ? '' : '\n'));
         }
@@ -264,6 +266,42 @@ function setRandomPosition(position: Position, maxX: number, maxY: number, notPo
     let randomIndex = Math.floor(Math.random() * availablePos.length);
     position.x = availablePos[randomIndex][0];
     position.y = availablePos[randomIndex][1];
+}
+
+function wumpusMove(wumpus: Wumpus) {
+    let pos: Position = wumpus._position;
+    let freeMoves = [[pos.x + 1, pos.y], [pos.x - 1, pos.y], [pos.x, pos.y + 1], [pos.x, pos.y - 1]];
+    for (let i = 0; i < game._items.length; i++) {
+        let item = game._items[i];
+        if (!item.isDeadly()) continue;
+        let freeMovesLength = freeMoves.length;
+        for (let j = 0; j < freeMovesLength; j++) {
+            if (!freeMoves[j]) continue;
+            if (item._position.x == freeMoves[j][0] && item._position.y == freeMoves[j][1]) {
+                freeMoves.splice(j, 1);
+                j--;
+            } else if (freeMoves[j][0] < 0 || freeMoves[j][0] >= game._mapSize.x) {
+                freeMoves.splice(j, 1);
+                j--;
+            } else if (freeMoves[j][1] < 0 || freeMoves[j][1] >= game._mapSize.y) {
+                freeMoves.splice(j, 1);
+                j--;
+            }
+        }
+    }
+    if (freeMoves.length > 0) {
+        let randomIndex = Math.floor(Math.random() * freeMoves.length);
+        pos.x = freeMoves[randomIndex][0];
+        pos.y = freeMoves[randomIndex][1];
+    }
+    let gameItemsLength = game._items.length;
+    for (let i = 0; i < gameItemsLength; i++) {
+        if (game._items[i] instanceof Stench) {
+            game._items.splice(i, 1);
+            i--;
+        }
+    }
+    game._items = game._items.concat(createItemsAround(pos, Stench));
 }
 
 const game = new Game();
