@@ -27,7 +27,7 @@ prompt.get(['x', 'b'],
 ```
 ### Test sample:
 Input:
-```javascript
+```js
 prompt: x:  2
 prompt: b:  4
 ```
@@ -36,7 +36,7 @@ Output:
 result:  4096
 ```
 ## Game
-<img width="393" alt="Code_PYUbUCPsGT" src="https://github.com/XP20/course/assets/67698795/2cd8a04e-33e7-4b75-bfd0-60ab92211aba">
+<img width="393" alt="game_screenshot" src="https://raw.githubusercontent.com/XP20/course/master/full_stack_1/Game.png">
 
 ### Implemented the UML Diagram
 ### Implemented custom code for moving the agent
