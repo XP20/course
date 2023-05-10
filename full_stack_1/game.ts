@@ -248,8 +248,8 @@ function isConditionInRange(range: number, condition: Function):boolean {
 
 function setRandomPosition(position: Position, maxX: number, maxY: number, notPos?: Position[]) {
     let availablePos: number[][] = [];
-    for (let i = 0; i < game._mapSize.x; i++) {
-        for (let j = 0; j < game._mapSize.y; j++) {
+    for (let i = 0; i < maxX; i++) {
+        for (let j = 0; j < maxY; j++) {
             if (typeof notPos !== 'undefined') {
                 let found = false;
                 for (let k = 0; k < notPos.length; k++) {
