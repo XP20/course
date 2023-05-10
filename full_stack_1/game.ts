@@ -200,7 +200,6 @@ G - Gold`;
         }
         console.log('-----------------------');
 
-        console.log(this.isBreeze());
         if (this.isStench()) console.log('You feel a stench nearby!');
         if (this.isBreeze()) console.log('You feel a breeze nearby!');
     }
