@@ -180,8 +180,8 @@ G - Gold`;
             if (this._items[i] instanceof Wumpus) char = 'W';
             if (this._items[i] instanceof Pit) char = 'P';
             if (this._items[i] instanceof Gold) char = 'G';
-            if (this._items[i] instanceof Stench) char = 'S';
-            if (this._items[i] instanceof Wind) char = 'B';
+            //if (this._items[i] instanceof Stench) char = 'S';
+            //if (this._items[i] instanceof Wind) char = 'B';
             info[this._items[i]._position.x][this._items[i]._position.y] += char;
         }
         // Show info var
