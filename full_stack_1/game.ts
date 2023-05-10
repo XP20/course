@@ -193,8 +193,8 @@ G - Gold`;
                 for (let k = 0; k < 5 - infoFinalLength; k++) {
                     infoFinal += '_';
                 }
-                //line += (this._mapHidden[j][i] ? '?????' : infoFinal) + ' ';
-                line += (this._mapHidden[j][i] ? infoFinal : infoFinal) + ' ';
+                line += (this._mapHidden[j][i] ? '?????' : infoFinal) + ' ';
+                //line += (this._mapHidden[j][i] ? infoFinal : infoFinal) + ' ';
             }
             console.log(line + (i == 0 ? '' : '\n'));
         }
