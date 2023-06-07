@@ -7,7 +7,7 @@ import {v4 as uuidv4} from 'uuid';
 import {OrmUser} from "../models/orm/OrmUser";
 import {OrmSession} from "../models/orm/OrmSession";
 import {OrmHabit} from "../models/orm/OrmHabit";
-import { OrmHabitRecord } from "../models/orm/OrmHabitRecord";
+import {OrmHabitRecord} from "../models/orm/OrmHabitRecord";
 
 export class ControllerDatabase {
     //singleton
