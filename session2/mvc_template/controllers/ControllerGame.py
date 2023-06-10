@@ -10,15 +10,17 @@ from controllers.ControllerActorWarrior import ControllerActorWarrior
 from controllers.ControllerActorRider import ControllerActorRider
 
 class ControllerGame:
-    def __init__(self):
+    def __init__(self, x = 100, y = 100):
         self._actor_controllers: List[ControllerActor] = []
+        self._size_x = x
+        self._size_y = y
 
     def new_game(self):
         game = Game()
 
         # Create map
-        game.map_size.x = 100
-        game.map_size.y = 100
+        game.map_size.x = self._size_x
+        game.map_size.y = self._size_y
 
         randomTiles = (EnumMapTileType.Ground, EnumMapTileType.Ground, EnumMapTileType.Ground, EnumMapTileType.Ground, EnumMapTileType.Ground, EnumMapTileType.Mountain)#, EnumMapTileType.Water)
 

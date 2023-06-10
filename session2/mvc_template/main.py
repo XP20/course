@@ -1,7 +1,9 @@
 from views.WindowMain import WindowMain
+from controllers.ControllerGame import ControllerGame
 from pynput import keyboard
 
-windowMain = WindowMain()
+controller = ControllerGame(100, 100)
+windowMain = WindowMain(controller)
 
 def on_press(key):
     if key == keyboard.Key.right:
