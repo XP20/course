@@ -9,9 +9,6 @@ class Vector2D:
     x: int = 0
     y: int = 0
 
-    #def __init__(self):
-    #    super().__init__()
-
     def __add__(self, other):
         return Vector2D(self.x + other.x, self.y + other.y)
 

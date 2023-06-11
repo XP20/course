@@ -1,7 +1,8 @@
 import abc
-import math
 from models.Vector2D import Vector2D
 from models.Game import Game
+from models.enums.EnumActor import EnumActor
+from models.enums.EnumTribe import EnumTribe
 
 class ControllerActor(metaclass=abc.ABCMeta):
     def __init__(self):
@@ -9,6 +10,8 @@ class ControllerActor(metaclass=abc.ABCMeta):
         self.movement = 0
         self.damage = 0
         self.health = 100
+        self.type: EnumActor = EnumActor.NotSet
+        self.tribe: EnumTribe = EnumTribe.NotSet
 
         # Animation
         self.animatedPos = Vector2D()

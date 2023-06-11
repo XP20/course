@@ -1,23 +1,22 @@
 import time
 import pygame
 import math
-from typing import List
+from typing import Dict, List
 
 from controllers.ControllerGame import ControllerGame
-from models.enums.EnumMapTileType import EnumMapTileType
+from models.MapBuilding import MapBuilding
+from models.enums.EnumActor import EnumActor
+from models.enums.EnumMapTile import EnumMapTile
+from models.enums.EnumTribe import EnumTribe
 from controllers.ControllerActor import ControllerActor
 from controllers.ControllerActorWarrior import ControllerActorWarrior
 from controllers.ControllerActorRider import ControllerActorRider
 from models.Vector2D import Vector2D
 from models.MapTile import MapTile
+from views.resources.ResourceFactoryHoodrick import ResourceFactoryHoodrick
+from views.resources.ResourceFactoryImperius import ResourceFactoryImperius
 
-renderOrder = (EnumMapTileType.Ground, EnumMapTileType.Mountain)
-renderOffsets = {
-    EnumMapTileType.Ground: Vector2D(0, 0),
-    EnumMapTileType.Mountain: Vector2D(-8, -16),
-}
-
-tileHeight = 16
+tileHeight = 15
 tileWidth = 52
 
 def toTilePos(x, y):
@@ -37,28 +36,41 @@ class WindowMain:
         )
         self.is_game_running = True
 
+        # Resource factories
+        self.resource_factories_by_tribes = {
+            EnumTribe.Imperius: ResourceFactoryImperius(),
+            EnumTribe.Hoodrick: ResourceFactoryHoodrick()
+        }
+
+        # Surfaces
+        self.surfaces_by_buildings = {
+
+        }
+        
+        self.surfaces_by_map_tiles = {
+            EnumMapTile.Ground: pygame.image.load('./resources/Tribes/Imperius/Imperius ground.png'),
+            EnumMapTile.Mountain: pygame.image.load('./resources/Tribes/Imperius/Imperius mountain.png'),
+        }
+
+        self.surfaces_by_actor = {
+            EnumActor.Horseman: pygame.image.load('./resources/Units/Sprites/Rider.png'),
+            EnumActor.Warrior: pygame.image.load('./resources/Units/Sprites/Warrior.png'),
+        }
+
+        # Offsets
+        self.offsets_by_tile = {
+            EnumMapTile.Ground: Vector2D(0, 0),
+            EnumMapTile.Mountain: Vector2D(-6, -17),
+        }
+
+        self.offsets_by_actor = {
+            EnumActor.Horseman: Vector2D(8, -18),
+            EnumActor.Warrior: Vector2D(4, -20),
+        }
+
+
         self.camSpeed = 6
         self.camPosition = Vector2D()
-
-        self.ground = pygame.image.load('./resources/Tribes/Imperius/Imperius ground.png').convert_alpha()
-        self.ground.set_colorkey((0,0,0))
-        self.mountain = pygame.image.load('./resources/Tribes/Imperius/Imperius mountain.png').convert_alpha()
-        self.mountain.set_colorkey((0,0,0))
-
-        self.rider = pygame.image.load('./resources/Units/Sprites/Rider.png').convert_alpha()
-        self.rider.set_colorkey((0,0,0))
-        self.warrior = pygame.image.load('./resources/Units/Sprites/Warrior.png').convert_alpha()
-        self.warrior.set_colorkey((0,0,0))
-
-        self.tileSurface = {
-            EnumMapTileType.Ground: self.ground,
-            EnumMapTileType.Mountain: self.mountain,
-        }
-
-        self.actorSurface = {
-            ControllerActorRider: self.rider,
-            ControllerActorWarrior: self.warrior,
-        }
         
         self._controller = controller
         self._game = self._controller.new_game()
@@ -80,36 +92,34 @@ class WindowMain:
                 if event.type == pygame.MOUSEBUTTONUP:
                     posIn = pygame.mouse.get_pos()
                     pos = Vector2D(posIn[0] - self.camPosition.x, posIn[1] - self.camPosition.y)
-                    clicked_tile: MapTile
+                    clicked_tile: MapTile = None
                     closest = math.inf
-
-                    # For every single one would be way too bad.
-                    #     fix by using some 2 tiles to the left some 2 to the right, up, down, box blur type
-                    #* Just estimating around where + offsets
                     
                     # Also make sure that the player cant go onto a mountain tile.
                     #* Will be handled in characters move, maybe just closest non-mountain tile
 
-                    # selected.move(self.camPosition)
-
-                    #! REPLACE WITH CODE FOR CALLING MOVE ON SELECTED CHARACTER
+                    #! Calling move for the selected character
+                    #! Getting only tiles around the click location character 100 x 100 = 10`000 or 5 x 5 = 25
                     for i in range(len(self._game.map_tiles)):
                         for j in range(len(self._game.map_tiles[i])):
                             tile = self._game.map_tiles[i][j]
 
-                            if tile.tile_type == EnumMapTileType.Ground:
+                            if tile.tile_type == EnumMapTile.Ground:
                                 tilePos = toTilePos(tile.position.x, tile.position.y)
                                 tilePos += Vector2D(tileWidth / 2, tileHeight / 2)
+
                                 deltaX = abs(tilePos.x - pos.x)
                                 deltaY = abs(tilePos.y - pos.y)
                                 distance = deltaX**2 + deltaY**2
+
                                 if distance < closest:
                                     clicked_tile = tile
                                     closest = distance
-                    for i in self._controller._actor_controllers:
-                        if type(i) == ControllerActorWarrior:
-                            print(clicked_tile.position)
-                            i.execute_turn(self._game, clicked_tile.position.x, clicked_tile.position.y)
+
+                    if clicked_tile != None:
+                        for i in self._controller._actor_controllers:
+                            if type(i) == ControllerActorWarrior:
+                                i.move(clicked_tile)
 
             # update
             self.update(delta_time)
@@ -122,12 +132,10 @@ class WindowMain:
             time.sleep(0.005)
 
     def update(self, delta_time):
-        for actor in self._controller._actor_controllers:
-            actor.update(delta_time)
+        self._controller.update(self._game, delta_time)
 
     def execute_turn(self):
-        for actor in self._controller._actor_controllers:
-            actor.execute_turn(self._game)
+        self._controller.execute_turn(self._game)
 
     def draw(self):
         # Clear screen
@@ -140,10 +148,11 @@ class WindowMain:
 
         # Draw everything in isometric grid
         for i in range(self._game.map_size.y):
+            # Render tiles for row
             for j in range(self._game.map_size.x):
                 tile = self._game.map_tiles[j][i]
                 tile_type = tile.tile_type
-                tileOffset = renderOffsets[tile_type]
+                tileOffset = self.offsets_by_tile[tile_type]
 
                 x = j * tileWidth + tempCamPos.x
                 y = i * tileHeight + tempCamPos.y
@@ -151,14 +160,16 @@ class WindowMain:
                 if i % 2 == 1:
                     x += tileWidth / 2
 
-                self.screen.blit(self.tileSurface[tile_type], dest=(x + tileOffset.x, y + tileOffset.y))
+                self.screen.blit(self.surfaces_by_map_tiles[tile_type], dest=(x + tileOffset.x, y + tileOffset.y))
 
+            # Render actors for row
             actors = self._controller._actor_controllers
             actors.sort(key= lambda x: x.pos.y)
             for actor in actors:
-                x = actor.animatedPos.x + tempCamPos.x + actor.renderOffset.x
-                y = actor.animatedPos.y + tempCamPos.y + actor.renderOffset.y
-
-                if actor.pos.y == i:
-                    surface = self.actorSurface[type(actor)]
+                x = actor.animatedPos.x + tempCamPos.x + self.offsets_by_actor[actor.type].x
+                y = actor.animatedPos.y + tempCamPos.y + self.offsets_by_actor[actor.type].y
+                
+                orderY = actor.animatedPos.y / tileHeight
+                if math.ceil(orderY) == i:
+                    surface = self.surfaces_by_actor[actor.type]
                     self.screen.blit(surface, dest=(x, y))

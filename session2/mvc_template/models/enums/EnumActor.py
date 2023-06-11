@@ -1,6 +1,6 @@
 from enum import Enum
 
-class EnumActorType(str, Enum):
+class EnumActor(str, Enum):
     NotSet = "NotSet"
     Warrior = "Warrior"
     Horseman = "Horseman"

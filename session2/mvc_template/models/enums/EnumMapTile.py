@@ -1,6 +1,6 @@
 from enum import Enum
 
-class EnumMapTileType(str, Enum):
+class EnumMapTile(str, Enum):
     NotSet = "NotSet"
     Ground = "Ground"
     Water = "Water"

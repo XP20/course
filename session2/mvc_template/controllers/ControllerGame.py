@@ -4,7 +4,7 @@ from typing import List
 from models.Game import Game
 from models.MapTile import MapTile
 from models.Vector2D import Vector2D
-from models.enums.EnumMapTileType import EnumMapTileType
+from models.enums.EnumMapTile import EnumMapTile
 from controllers.ControllerActor import ControllerActor
 from controllers.ControllerActorWarrior import ControllerActorWarrior
 from controllers.ControllerActorRider import ControllerActorRider
@@ -22,7 +22,7 @@ class ControllerGame:
         game.map_size.x = self._size_x
         game.map_size.y = self._size_y
 
-        randomTiles = (EnumMapTileType.Ground, EnumMapTileType.Ground, EnumMapTileType.Ground, EnumMapTileType.Ground, EnumMapTileType.Ground, EnumMapTileType.Mountain)#, EnumMapTileType.Water)
+        randomTiles = (EnumMapTile.Ground, EnumMapTile.Ground, EnumMapTile.Ground, EnumMapTile.Ground, EnumMapTile.Ground, EnumMapTile.Mountain)#, EnumMapTile.Water)
 
         for j in range(game.map_size.y):
             game.map_tiles.append([])
@@ -43,7 +43,9 @@ class ControllerGame:
         return game
     
     def execute_turn(self, game: Game):
-        pass
+        for actor in self._actor_controllers:
+            actor.execute_turn(game)
 
     def update(self, game: Game, delta_time):
-        pass
+        for actor in self._actor_controllers:
+            actor.update(delta_time)
