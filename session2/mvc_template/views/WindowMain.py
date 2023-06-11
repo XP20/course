@@ -5,6 +5,7 @@ from typing import List
 
 from controllers.ControllerGame import ControllerGame
 from models.enums.EnumMapTileType import EnumMapTileType
+from controllers.ControllerActor import ControllerActor
 from controllers.ControllerActorWarrior import ControllerActorWarrior
 from controllers.ControllerActorRider import ControllerActorRider
 from models.Vector2D import Vector2D
@@ -16,10 +17,18 @@ renderOffsets = {
     EnumMapTileType.Mountain: Vector2D(-8, -16),
 }
 
-# tileHeight = 32
-# tileWidth = 26
 tileHeight = 16
 tileWidth = 52
+
+def toTilePos(x, y):
+    posOut = Vector2D(x, y)
+    posOut.x *= tileWidth
+    posOut.y *= tileHeight
+
+    if y % 2 == 1:
+        posOut.x += tileWidth / 2
+
+    return posOut
 
 class WindowMain:
     def __init__(self, controller: ControllerGame):
@@ -41,9 +50,14 @@ class WindowMain:
         self.warrior = pygame.image.load('./resources/Units/Sprites/Warrior.png').convert_alpha()
         self.warrior.set_colorkey((0,0,0))
 
-        self.tiles = {
+        self.tileSurface = {
             EnumMapTileType.Ground: self.ground,
             EnumMapTileType.Mountain: self.mountain,
+        }
+
+        self.actorSurface = {
+            ControllerActorRider: self.rider,
+            ControllerActorWarrior: self.warrior,
         }
         
         self._controller = controller
@@ -82,14 +96,19 @@ class WindowMain:
                     for i in range(len(self._game.map_tiles)):
                         for j in range(len(self._game.map_tiles[i])):
                             tile = self._game.map_tiles[i][j]
-                            deltaX = abs(tile.position.x * tileWidth + tileWidth - pos.x)
-                            deltaY = abs(tile.position.y * tileHeight + tileHeight * 0.5 - pos.y)
-                            distance = deltaX**2 + deltaY**2
-                            if distance < closest:
-                                clicked_tile = tile
-                                closest = distance
+
+                            if tile.tile_type == EnumMapTileType.Ground:
+                                tilePos = toTilePos(tile.position.x, tile.position.y)
+                                tilePos += Vector2D(tileWidth / 2, tileHeight / 2)
+                                deltaX = abs(tilePos.x - pos.x)
+                                deltaY = abs(tilePos.y - pos.y)
+                                distance = deltaX**2 + deltaY**2
+                                if distance < closest:
+                                    clicked_tile = tile
+                                    closest = distance
                     for i in self._controller._actor_controllers:
                         if type(i) == ControllerActorWarrior:
+                            print(clicked_tile.position)
                             i.execute_turn(self._game, clicked_tile.position.x, clicked_tile.position.y)
 
             # update
@@ -110,18 +129,6 @@ class WindowMain:
         for actor in self._controller._actor_controllers:
             actor.execute_turn(self._game)
 
-    def toTilePos(self, posIn: Vector2D, camPos = None):
-        if camPos == None:
-            camPos = self.camPosition
-        posOut = posIn
-        posOut.x *= tileWidth - camPos.x
-        posOut.y *= tileHeight - camPos.y
-
-        if posIn.y % 2 == 1:
-            posOut.x += tileWidth / 2
-
-        return posOut
-
     def draw(self):
         # Clear screen
         self.screen.fill((0, 0, 0))
@@ -131,28 +138,27 @@ class WindowMain:
         tempCamPos.x = self.camPosition.x
         tempCamPos.y = self.camPosition.y
 
-        #! REWRITE ACTORS BY USING ACTOR MAP LIKE FOR THE MAP
-
         # Draw everything in isometric grid
         for i in range(self._game.map_size.y):
             for j in range(self._game.map_size.x):
                 tile = self._game.map_tiles[j][i]
                 tile_type = tile.tile_type
-                offset = renderOffsets[tile_type]
-                x = j * tileWidth + tempCamPos.x + offset.x
-                y = i * tileHeight + tempCamPos.y + offset.y
+                tileOffset = renderOffsets[tile_type]
+
+                x = j * tileWidth + tempCamPos.x
+                y = i * tileHeight + tempCamPos.y
                 
                 if i % 2 == 1:
                     x += tileWidth / 2
 
-                self.screen.blit(self.tiles[tile_type], dest=(x, y))
-        
-        self._controller._actor_controllers.sort(key= lambda x: x.pos.y)
-        for actor in self._controller._actor_controllers:
-            x = actor.animatedPos.x * tileWidth + tempCamPos.x + 2
-            preY = actor.animatedPos.y * tileHeight + tempCamPos.y - 26
-            y = preY + abs(math.sin(0.5 * math.pi * actor.animatedPos.x)) * (tileHeight / 2)
-            if type(actor) == ControllerActorRider:
-                self.screen.blit(self.rider, dest=(x, y))
-            elif type(actor) == ControllerActorWarrior:
-                self.screen.blit(self.warrior, dest=(x, y))
+                self.screen.blit(self.tileSurface[tile_type], dest=(x + tileOffset.x, y + tileOffset.y))
+
+            actors = self._controller._actor_controllers
+            actors.sort(key= lambda x: x.pos.y)
+            for actor in actors:
+                x = actor.animatedPos.x + tempCamPos.x + actor.renderOffset.x
+                y = actor.animatedPos.y + tempCamPos.y + actor.renderOffset.y
+
+                if actor.pos.y == i:
+                    surface = self.actorSurface[type(actor)]
+                    self.screen.blit(surface, dest=(x, y))
