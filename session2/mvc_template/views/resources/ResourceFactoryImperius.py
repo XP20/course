@@ -1,4 +1,5 @@
 import pygame
+from pygame import Surface
 from loguru import logger
 
 from models.enums.EnumActor import EnumActor
@@ -9,7 +10,7 @@ class ResourceFactoryImperius(IResourceFactory):
     def __init__(self):
         super().__init__()
 
-    def create_building(self, enum_building: EnumBuilding, level: int) -> pygame.Surface:
+    def create_building(self, enum_building: EnumBuilding, level: int) -> Surface:
         result = None
 
         try:
@@ -22,7 +23,7 @@ class ResourceFactoryImperius(IResourceFactory):
 
         return result
     
-    def create_actor(self, enum_actor: EnumActor) -> pygame.Surface:
+    def create_actor(self, enum_actor: EnumActor) -> Surface:
         result = None
 
         try:
@@ -30,7 +31,7 @@ class ResourceFactoryImperius(IResourceFactory):
                 result = pygame.image.load(f'resources/Tribes/Imperius/Units/warrior.png')
             elif enum_actor == EnumActor.Knight:
                 result = pygame.image.load(f'resources/Tribes/Imperius/Units/knight.png')
-            elif enum_actor == EnumActor.Horseman:
+            elif enum_actor == EnumActor.Rider:
                 result = pygame.image.load(f'resources/Tribes/Imperius/Units/rider.png')
         except Exception as exc:
             logger.exception(exc)

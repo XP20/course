@@ -1,20 +1,25 @@
 import time
-import pygame
 import math
+import pygame
+from pygame import Surface
 from typing import Dict, List
 
-from controllers.ControllerGame import ControllerGame
 from models.MapBuilding import MapBuilding
+from models.Vector2D import Vector2D
+from models.MapTile import MapTile
+
 from models.enums.EnumActor import EnumActor
 from models.enums.EnumMapTile import EnumMapTile
 from models.enums.EnumTribe import EnumTribe
-from controllers.ControllerActor import ControllerActor
+
+from controllers.ControllerGame import ControllerGame
+from controllers.interfaces.IControllerActor import IControllerActor
 from controllers.ControllerActorWarrior import ControllerActorWarrior
 from controllers.ControllerActorRider import ControllerActorRider
-from models.Vector2D import Vector2D
-from models.MapTile import MapTile
+
 from views.resources.ResourceFactoryHoodrick import ResourceFactoryHoodrick
 from views.resources.ResourceFactoryImperius import ResourceFactoryImperius
+from views.components.ComponentButton import ComponentButton
 
 tileHeight = 15
 tileWidth = 52
@@ -37,10 +42,15 @@ class WindowMain:
         self.is_game_running = True
 
         # Resource factories
+        resourceFactoryImperius = ResourceFactoryImperius()
+        resourceFactoryHoodrick = ResourceFactoryHoodrick()
+
         self.resource_factories_by_tribes = {
-            EnumTribe.Imperius: ResourceFactoryImperius(),
-            EnumTribe.Hoodrick: ResourceFactoryHoodrick()
+            EnumTribe.Imperius: resourceFactoryImperius,
+            EnumTribe.Hoodrick: resourceFactoryHoodrick,
         }
+
+        self.resource_factories_by_tribes[EnumTribe.Imperius]
 
         # Surfaces
         self.surfaces_by_buildings = {
@@ -53,7 +63,7 @@ class WindowMain:
         }
 
         self.surfaces_by_actor = {
-            EnumActor.Horseman: pygame.image.load('./resources/Units/Sprites/Rider.png'),
+            EnumActor.Rider: pygame.image.load('./resources/Units/Sprites/Rider.png'),
             EnumActor.Warrior: pygame.image.load('./resources/Units/Sprites/Warrior.png'),
         }
 
@@ -64,7 +74,7 @@ class WindowMain:
         }
 
         self.offsets_by_actor = {
-            EnumActor.Horseman: Vector2D(8, -18),
+            EnumActor.Rider: Vector2D(8, -18),
             EnumActor.Warrior: Vector2D(4, -20),
         }
 

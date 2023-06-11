@@ -5,13 +5,14 @@ from models.Game import Game
 from models.MapTile import MapTile
 from models.Vector2D import Vector2D
 from models.enums.EnumMapTile import EnumMapTile
-from controllers.ControllerActor import ControllerActor
+from controllers.interfaces.IControllerActor import IControllerActor
 from controllers.ControllerActorWarrior import ControllerActorWarrior
 from controllers.ControllerActorRider import ControllerActorRider
+from models.enums.EnumTribe import EnumTribe
 
 class ControllerGame:
     def __init__(self, x = 100, y = 100):
-        self._actor_controllers: List[ControllerActor] = []
+        self._actor_controllers: List[IControllerActor] = []
         self._size_x = x
         self._size_y = y
 
@@ -34,8 +35,8 @@ class ControllerGame:
                 game.map_tiles[j].append(map_tile)
 
         # Spawn actors
-        warrior = ControllerActorWarrior()
-        rider = ControllerActorRider()
+        warrior = ControllerActorWarrior(EnumTribe.Imperius)
+        rider = ControllerActorRider(EnumTribe.Imperius)
 
         self._actor_controllers.append(warrior)
         self._actor_controllers.append(rider)

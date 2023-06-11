@@ -1,6 +1,6 @@
 import random
 
-from controllers.ControllerActor import ControllerActor
+from controllers.interfaces.IControllerActor import IControllerActor
 from models.enums.EnumActor import EnumActor
 from models.enums.EnumTribe import EnumTribe
 from models.Actor import Actor
@@ -11,10 +11,11 @@ from models.MapTile import MapTile
 
 import views.WindowMain as windowMain
 
-animationTime = 0.15
+animationTime = 0.2
 
-class ControllerActorWarrior(ControllerActor):
-    def __init__(self):
+class ControllerActorWarrior(IControllerActor):
+    def __init__(self, actor):
+        self.actor = actor
         super().__init__()
         self._actor = Actor()
         
@@ -34,32 +35,29 @@ class ControllerActorWarrior(ControllerActor):
             self.animatedPos = tilePos
             self.elapsed = 0
 
-    def execute_turn(self, game: Game, tx = -1, ty = -1):
-        if tx < 0 or ty < 0:
-            directions = [Vector2D(1,1), Vector2D(-1,-1), Vector2D(-1,1), Vector2D(1,-1)]
-            steps = 0
-            while (len(directions) > 0) and (steps < self.movement):
-                direction = random.choice(directions)
-                newPos = self.pos + direction
+    def execute_turn(self, game: Game):
+        directions = [Vector2D(1,1), Vector2D(-1,-1), Vector2D(-1,1), Vector2D(1,-1)]
+        steps = 0
+        while (len(directions) > 0) and (steps < self.movement):
+            direction = random.choice(directions)
+            newPos = self.pos + direction
 
-                inside = (newPos.x >= 0) and (newPos.y >= 0) and (newPos.x < game.map_size.x) and (newPos.y < game.map_size.y)
-                if inside:
-                    onGround = (game.map_tiles[newPos.x][newPos.y].tile_type == EnumMapTile.Ground)
-                    if onGround:
-                        steps += 1
-                        self.pos = newPos
+            inside = (newPos.x >= 0) and (newPos.y >= 0) and (newPos.x < game.map_size.x) and (newPos.y < game.map_size.y)
+            if inside:
+                onGround = (game.map_tiles[newPos.x][newPos.y].tile_type == EnumMapTile.Ground)
+                if onGround:
+                    steps += 1
+                    self.pos = newPos
 
-                        # Removing backwards direction so dont move back
-                        try:
-                            directions.remove(Vector2D(-direction.x, -direction.y))
-                        except:
-                            pass
-                    else:
-                        directions.remove(direction)
+                    # Removing backwards direction so dont move back
+                    try:
+                        directions.remove(Vector2D(-direction.x, -direction.y))
+                    except:
+                        pass
                 else:
                     directions.remove(direction)
-        else:
-            self.pos = Vector2D(tx, ty)
+            else:
+                directions.remove(direction)
 
     def move(self, targetTile: MapTile):
         tile_type = targetTile.tile_type

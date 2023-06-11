@@ -4,7 +4,7 @@ from models.Game import Game
 from models.enums.EnumActor import EnumActor
 from models.enums.EnumTribe import EnumTribe
 
-class ControllerActor(metaclass=abc.ABCMeta):
+class IControllerActor(metaclass=abc.ABCMeta):
     def __init__(self):
         self.pos = Vector2D()
         self.movement = 0
@@ -16,7 +16,6 @@ class ControllerActor(metaclass=abc.ABCMeta):
         # Animation
         self.animatedPos = Vector2D()
         self.elapsed = 0
-        self.oldPos = self.pos
 
     @abc.abstractmethod
     def update(delta_time):
