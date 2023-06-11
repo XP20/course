@@ -19,7 +19,6 @@ class Game:
 
     map_tiles: List[List[MapTile]] = field(default_factory=list)
     map_items: List[List[MapItem]] = field(default_factory=list)
-    actors: List[Actor] = field(default_factory=list)
 
     turn: int = 0
     stars: int = 0

@@ -2,6 +2,7 @@ import random
 import math
 
 from controllers.ControllerActor import ControllerActor
+from models.ViewProperties import ViewProperties
 from models.Actor import Actor
 from models.Game import Game
 from models.Vector2D import Vector2D
@@ -12,7 +13,7 @@ import views.WindowMain as windowMain
 
 animationTime = 0.3
 
-class ControllerActorRider(ControllerActor):
+class ControllerActorRider(ControllerActor, ViewProperties):
     def __init__(self):
         super().__init__()
         self._actor = Actor()
@@ -21,35 +22,41 @@ class ControllerActorRider(ControllerActor):
         self.movement = 2
         self.health = 200
 
+        self.renderOffset = Vector2D(0, 0)
+
     def update(self, delta_time):
-        if self.animatedPos != self.pos:
+        tilePos = windowMain.toTilePos(self.pos.x, self.pos.y)
+        if self.animatedPos != tilePos:
             self.elapsed += delta_time * (1/animationTime)
-            self.animatedPos = ControllerActor.lerp(self.animatedPos, self.pos, min(max(0, self.elapsed), 1))
+            self.animatedPos = self.animatedPos.lerpTo(tilePos, self.elapsed)
         if self.elapsed > 1:
-            self.animatedPos = self.pos
+            self.animatedPos = tilePos
             self.elapsed = 0
 
     def execute_turn(self, game: Game, tx = -1, ty = -1):
         if tx < 0 or ty < 0:
-            directions = [Vector2D(1,0), Vector2D(-1,0), Vector2D(0,1), Vector2D(0,-1)]
+            directions = [Vector2D(1,1), Vector2D(-1,-1), Vector2D(-1,1), Vector2D(1,-1)]
             steps = 0
             while (len(directions) > 0) and (steps < self.movement):
                 direction = random.choice(directions)
                 newPos = self.pos + direction
 
-                onGround = game.map_tiles[newPos.x][newPos.y].tile_type == EnumMapTileType.Ground
                 inside = (newPos.x >= 0) and (newPos.y >= 0) and (newPos.x < game.map_size.x) and (newPos.y < game.map_size.y)
+                if inside:
+                    onGround = (game.map_tiles[newPos.x][newPos.y].tile_type == EnumMapTileType.Ground)
+                    if onGround:
+                        steps += 1
+                        self.pos = newPos
 
-                if not inside or not onGround:
-                    directions.remove(direction)
+                        # Removing backwards direction so dont move back
+                        try:
+                            directions.remove(Vector2D(-direction.x, -direction.y))
+                        except:
+                            pass
+                    else:
+                        directions.remove(direction)
                 else:
-                    steps += 1
-                    self.pos = newPos
-                    # Removing backwards direction so dont move back
-                    try:
-                        directions.remove(Vector2D(-direction.x, -direction.y))
-                    except:
-                        pass
+                    directions.remove(direction)
         else:
             self.pos = Vector2D(tx, ty)
     
@@ -67,11 +74,14 @@ class ControllerActorRider(ControllerActor):
         for i in range(len(windowMain._game.map_tiles)):
             for j in range(len(windowMain._game.map_tiles[i])):
                 tile = windowMain._game.map_tiles[i][j]
-                deltaX = abs(tile.position.x * windowMain.tileWidth + windowMain.tileWidth - clickPos.x)
-                deltaY = abs(tile.position.y * windowMain.tileHeight + windowMain.tileHeight * 0.5 - clickPos.y)
-                distance = deltaX**2 + deltaY**2
-                if distance < closest:
-                    clicked_tile = tile
-                    closest = distance
-        #! REPLACE WITH CODE FOR CALLING MOVE ON SELECTED CHARACTER
+
+                if tile.tile_type == EnumMapTileType.Ground:
+                    tilePos = windowMain.toTilePos(tile.position.x, tile.position.y)
+                    tilePos += Vector2D(windowMain.tileWidth / 2, windowMain.tileHeight / 2)
+                    deltaX = abs(tilePos.x - clickPos.x)
+                    deltaY = abs(tilePos.y - clickPos.y)
+                    distance = deltaX**2 + deltaY**2
+                    if distance < closest:
+                        clicked_tile = tile
+                        closest = distance
         self.execute_turn(self._game, clicked_tile.position.x, clicked_tile.position.y)

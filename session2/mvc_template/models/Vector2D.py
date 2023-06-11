@@ -71,3 +71,10 @@ class Vector2D:
 
     def __bool__(self):
         return self.x != 0 and self.y != 0
+    
+    def lerpTo(self, other, amount):
+        amount = max(min(amount, 1), 0)
+        selfAmount = 1 - amount
+        x = other.x * amount + self.x * selfAmount
+        y = other.y * amount + self.y * selfAmount
+        return Vector2D(x, y)

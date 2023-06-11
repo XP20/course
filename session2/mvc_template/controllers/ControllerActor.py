@@ -26,7 +26,3 @@ class ControllerActor(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def move(pos: Vector2D):
         pass
-
-    @staticmethod
-    def lerp(vec1, vec2, x):
-        return (Vector2D(x * vec1.x, x * vec1.y)) + (Vector2D((1-x) * vec2.x, (1-x) * vec2.y))
