@@ -1,6 +1,8 @@
 import random
 from typing import List
 
+import pygame
+
 from controllers.interfaces.IControllerActor import IControllerActor
 from models.enums.EnumActor import EnumActor
 from models.enums.EnumTribe import EnumTribe
@@ -62,7 +64,7 @@ class ControllerActorRider(IControllerActor):
 
             inside = (newPos.x >= 0) and (newPos.y >= 0) and (newPos.x < game.map_size.x) and (newPos.y < game.map_size.y)
             if inside:
-                onGround = (game.map_tiles[newPos.x][newPos.y].tile_type == EnumMapTile.Ground)
+                onGround = (game.map_tiles[newPos.y][newPos.x].tile_type == EnumMapTile.Ground)
                 if onGround:
                     steps += 1
                     self.actor.position = newPos

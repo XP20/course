@@ -4,6 +4,7 @@ from models.Vector2D import Vector2D
 from dataclasses_json import dataclass_json
 from models.enums.EnumBuilding import EnumBuilding
 from models.enums.EnumTribe import EnumTribe
+from views.components.ComponentButton import ComponentButton
 
 @dataclass_json
 @dataclass
@@ -12,6 +13,4 @@ class MapBuilding:
     building_type: EnumBuilding = EnumBuilding.NotSet
     tribe: EnumTribe = EnumTribe.NotSet
     level = 1
-
-    def __hash__(self):
-        return id(self)
+    button: ComponentButton = None

@@ -2,8 +2,6 @@ import abc
 from models.Actor import Actor
 from models.Vector2D import Vector2D
 from models.Game import Game
-from models.enums.EnumActor import EnumActor
-from models.enums.EnumTribe import EnumTribe
 
 class IControllerActor(metaclass=abc.ABCMeta):
     def __init__(self, actor: Actor):

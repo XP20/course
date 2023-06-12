@@ -5,12 +5,15 @@ from models.enums.EnumActor import EnumActor
 from models.enums.EnumTribe import EnumTribe
 from dataclasses_json import dataclass_json
 
+from views.components.ComponentButton import ComponentButton
+
 @dataclass_json
 @dataclass
 class Actor:
     position: Vector2D = field(default=Vector2D)
     actor_type: EnumActor = EnumActor.NotSet
     tribe: EnumTribe = EnumTribe.NotSet
+    button: ComponentButton = None
 
     cost_stars: int = 0
     move_steps: int = 0
