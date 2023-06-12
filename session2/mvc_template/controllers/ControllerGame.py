@@ -1,5 +1,6 @@
 import random
 from typing import List
+from models.Actor import Actor
 
 from models.Game import Game
 from models.MapTile import MapTile
@@ -35,8 +36,12 @@ class ControllerGame:
                 game.map_tiles[j].append(map_tile)
 
         # Spawn actors
-        warrior = ControllerActorWarrior(EnumTribe.Imperius)
-        rider = ControllerActorRider(EnumTribe.Imperius)
+        warriorActor = Actor()
+        riderActor = Actor()
+        game.actors.append(warriorActor)
+        game.actors.append(riderActor)
+        warrior = ControllerActorWarrior(warriorActor)
+        rider = ControllerActorRider(riderActor)
 
         self._actor_controllers.append(warrior)
         self._actor_controllers.append(rider)

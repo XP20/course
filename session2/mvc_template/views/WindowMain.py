@@ -74,12 +74,12 @@ class WindowMain:
         }
 
         self.offsets_by_actor = {
-            EnumActor.Rider: Vector2D(8, -18),
+            EnumActor.Rider: Vector2D(6, -22),
             EnumActor.Warrior: Vector2D(4, -20),
         }
 
 
-        self.camSpeed = 6
+        self.camSpeed = 18
         self.camPosition = Vector2D()
         
         self._controller = controller
@@ -174,12 +174,13 @@ class WindowMain:
 
             # Render actors for row
             actors = self._controller._actor_controllers
-            actors.sort(key= lambda x: x.pos.y)
+            actors.sort(key= lambda x: x.actor.position.y)
             for actor in actors:
-                x = actor.animatedPos.x + tempCamPos.x + self.offsets_by_actor[actor.type].x
-                y = actor.animatedPos.y + tempCamPos.y + self.offsets_by_actor[actor.type].y
+                actor_type = actor.actor.actor_type
+                x = actor.animatedPos.x + tempCamPos.x + self.offsets_by_actor[actor_type].x
+                y = actor.animatedPos.y + tempCamPos.y + self.offsets_by_actor[actor_type].y
                 
                 orderY = actor.animatedPos.y / tileHeight
                 if math.ceil(orderY) == i:
-                    surface = self.surfaces_by_actor[actor.type]
+                    surface = self.surfaces_by_actor[actor_type]
                     self.screen.blit(surface, dest=(x, y))
