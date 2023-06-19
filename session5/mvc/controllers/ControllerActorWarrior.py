@@ -1,33 +1,20 @@
 import random
+from controllers.ControllerGame import ControllerGame
 
 from controllers.interfaces.IControllerActor import IControllerActor
-from models.enums.EnumActor import EnumActor
-from models.enums.EnumTribe import EnumTribe
 from models.Actor import Actor
 from models.Game import Game
 from models.Vector2D import Vector2D
 from models.enums.EnumMapTile import EnumMapTile
 from models.MapTile import MapTile
-
-import controllers.ControllerGame as controllerGameFile
-import views.WindowMain as windowMainFile
-
-animationTime = 0.2
+from views.ViewProperties import ViewProperties
 
 class ControllerActorWarrior(IControllerActor):
     def __init__(self, actor: Actor):
         self._actor = actor
-        self._actor.actor_type = EnumActor.Warrior
-        
-        self.actor.power_attack = 15
-        self.actor.power_defense = 10
-        self.actor.move_steps = 1
 
         self.elapsed = 0
         self.animatedPos = Vector2D(0, 0)
-
-        self.controllerGame = controllerGameFile.ControllerGame.instance()
-        self.windowMain = windowMainFile.WindowMain.instance()
 
         super().__init__(actor)
 
@@ -36,9 +23,9 @@ class ControllerActorWarrior(IControllerActor):
         return self._actor
 
     def update(self, delta_time):
-        tilePos = self.windowMain.toTilePos(self.actor.position.x, self.actor.position.y)
+        tilePos = ViewProperties.toTilePos(self.actor.position.x, self.actor.position.y)
         if self.animatedPos != tilePos:
-            self.elapsed += delta_time * (1/animationTime)
+            self.elapsed += delta_time * (1/ViewProperties.ANIMATION_TIME)
             self.animatedPos = self.animatedPos.lerpTo(tilePos, self.elapsed)
         if self.elapsed > 1:
             self.animatedPos = tilePos
@@ -83,7 +70,7 @@ class ControllerActorWarrior(IControllerActor):
                     directions.remove(direction)
             else:
                 directions.remove(direction)
-        self.controllerGame.game.stars += 1
+        ControllerGame.instance().game.stars += 1
 
     def move(self, targetTile: MapTile):
         tile_type = targetTile.tile_type
