@@ -102,9 +102,6 @@ export class ComponentHabitItem extends React.Component<Props, State> {
                         this.setState({
                             editing: true
                         });
-                        // if(editRef !== null) {
-                        //     editRef.focus();
-                        // }
                     }}>
                         <Text>Edit</Text>
                     </Pressable>
