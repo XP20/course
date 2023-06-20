@@ -44,12 +44,13 @@ export class ScreenHabits extends React.Component<Props, State> {
         });
     }
 
-    onEditHabit = (habit: Habit) => {
+    onEditHabit = (habit: Habit, newValue: string) => {
         let habits = this.state.habits;
-        habit.title = 'EDITED TITLE VALUE';
+        habit.title = newValue;
         this.setState({
             habits: habits
         });
+        Keyboard.dismiss();
     }
 
     render = () => {
