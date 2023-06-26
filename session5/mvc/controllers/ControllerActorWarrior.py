@@ -1,5 +1,4 @@
 import random
-from controllers.ControllerGame import ControllerGame
 
 from controllers.interfaces.IControllerActor import IControllerActor
 from models.Actor import Actor
@@ -21,9 +20,6 @@ class ControllerActorWarrior(IControllerActor):
     @property
     def actor(self) -> Actor:
         return self._actor
-    
-    def set_actor(self, actor: Actor):
-        self._actor = actor
 
     def update(self, delta_time):
         tilePos = ViewProperties.toTilePos(self.actor.position.x, self.actor.position.y)
@@ -72,7 +68,7 @@ class ControllerActorWarrior(IControllerActor):
                     directions.remove(direction)
             else:
                 directions.remove(direction)
-        ControllerGame.instance().game.stars += 1
+        # ControllerGame.instance().game.stars += 1
 
     def move(self, targetTile: MapTile):
         tile_type = targetTile.tile_type

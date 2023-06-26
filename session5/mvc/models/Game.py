@@ -20,7 +20,7 @@ class Game:
     window_location: Vector2D = field(default_factory=Vector2D)
 
     map_tiles: List[List[MapTile]] = field(default_factory=list)
-    items: List[List[MapItem]] = field(default_factory=list)
+    items: List[MapItem] = field(default_factory=list)
     buildings: List[MapBuilding] = field(default_factory=list)
     actors: List[Actor] = field(default_factory=list)
 

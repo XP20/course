@@ -6,7 +6,6 @@ from pygame import SRCALPHA, Rect, Surface
 from controllers.ControllerActorRider import ControllerActorRider
 from controllers.ControllerActorWarrior import ControllerActorWarrior
 from controllers.ControllerActorKnight import ControllerActorKnight
-from controllers.interfaces.IControllerActor import IControllerActor
 from models.Game import Game
 
 from models.Vector2D import Vector2D
@@ -79,13 +78,6 @@ class WindowMain:
             EnumBuilding.Sawmill: Vector2D(0, 0),
         }
 
-        # Actor controllers by actor type
-        self.controller_by_actor_type: Dict[EnumActor, callable] = {
-            EnumActor.Warrior: ControllerActorWarrior,
-            EnumActor.Rider: ControllerActorRider,
-            EnumActor.Knight: ControllerActorKnight,
-        }
-
         # Buttons
         self.ui_buttons: List[ComponentButton] = []
 
@@ -148,32 +140,33 @@ class WindowMain:
         self.make_building_buttons()
 
     def on_click_save_game(self, event: EventComponentButton):
-        state_json = self._game.to_json(indent=4)
-        with open('state.json', 'w') as fp:
-            fp.write(state_json)
+        # state_json = self._game.to_json(indent=4)
+        # with open('state.json', 'w') as fp:
+        #     fp.write(state_json)
+
+        self._controller.save_game()
 
     def on_click_load_game(self, event: EventComponentButton):
-        with open('state.json', 'r') as fp:
-            # Read json
-            state_json = fp.read()
-            self._controller.game = Game.from_json(state_json)
-            self._game = self._controller.game
+        # with open('state.json', 'r') as fp:
+        #     state_json = fp.read()
+        #     self._controller.game = Game.from_json(state_json)
+        #     self._game = self._controller.game
 
-            # Remake actor controllers
-            self._controller.selected_controller = None
-            self._controller._actor_controllers.clear()
-            for actor in self._game.actors:
-                actor_type = actor.actor_type
-                controller = self.controller_by_actor_type[actor_type](actor)
-                self._controller._actor_controllers.append(controller)
-
-            # Remake buttons
-            self.actor_buttons.clear()
-            self.make_actor_buttons()
-
-            self.building_buttons.clear()
-            self.make_building_buttons()
+        self._controller.load_game()
+        self._game = self._controller.game
+        self.setup_game()
         
+    def setup_game(self):
+        # Remake actor controllers
+        self._controller.setup_game()
+
+        # Remake buttons
+        self.actor_buttons.clear()
+        self.make_actor_buttons()
+
+        self.building_buttons.clear()
+        self.make_building_buttons()
+
     def on_key_press(self, key):
         if key == keyboard.Key.right:
             WindowMain.instance().camPosition.x -= ViewProperties.CAM_SPEED
@@ -298,7 +291,7 @@ class WindowMain:
 
     def update(self, delta_time):
         # Update actor controllers
-        self._controller.update(self._game, delta_time)
+        self._controller.update(delta_time)
         
         # Handle new game button
         mouse_pos = pygame.mouse.get_pos()
@@ -325,7 +318,7 @@ class WindowMain:
                 button.trigger_mouse(mouse_pos, mouse_buttons)
 
     def execute_turn(self, event: EventComponentButton):
-        self._controller.execute_turn(self._game)
+        self._controller.execute_turn()
 
     def draw_surface(self, surface: pygame.Surface, x: int, y: int):
         if (x > -ViewProperties.CULL_MARGIN) and (x < (ViewProperties.SCREEN_WIDTH + ViewProperties.CULL_MARGIN)):
