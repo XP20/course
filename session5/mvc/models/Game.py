@@ -9,6 +9,7 @@ from models.MapBuilding import MapBuilding
 from models.MapItem import MapItem
 from models.MapTile import MapTile
 from models.Vector2D import Vector2D
+from models.enums.EnumTribe import EnumTribe
 
 @dataclass_json
 @dataclass
@@ -25,3 +26,6 @@ class Game:
 
     turn: int = 0
     stars: int = 0
+
+    player_tribe: EnumTribe = EnumTribe.Imperius
+    turn_tribe: EnumTribe = EnumTribe.Imperius

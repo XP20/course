@@ -1,7 +1,6 @@
 import random
 from typing import List
 
-import pygame
 from controllers.ControllerGame import ControllerGame
 
 from controllers.interfaces.IControllerActor import IControllerActor
@@ -24,6 +23,9 @@ class ControllerActorRider(IControllerActor):
     @property
     def actor(self) -> Actor:
         return self._actor
+
+    def set_actor(self, actor: Actor):
+        self._actor = actor
 
     def update(self, delta_time):
         tilePos = ViewProperties.toTilePos(self.actor.position.x, self.actor.position.y)
@@ -65,10 +67,9 @@ class ControllerActorRider(IControllerActor):
                     self.actor.position = newPos
 
                     # Removing backwards direction so dont move back
-                    try:
+                    removeDir = Vector2D(-direction.x, -direction.y)
+                    if removeDir in directions:
                         directions.remove(Vector2D(-direction.x, -direction.y))
-                    except:
-                        pass
                 else:
                     directions.remove(direction)
             else:

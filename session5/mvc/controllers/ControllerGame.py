@@ -21,9 +21,6 @@ from views.ViewProperties import ViewProperties
 from views.components.ComponentButton import ComponentButton
 from views.factories.FactoryImperius import FactoryImperius
 
-tileHeight = 15
-tileWidth = 52
-
 class ControllerGame:
     __instance = None
 
@@ -43,13 +40,10 @@ class ControllerGame:
         self.collection_cont_actors = None
         self._size_x = 100
         self._size_y = 100
-        self.turn_tribe = EnumTribe.Imperius
 
     def new_game(self):
         random.seed(time.time())
         self.game = Game()
-
-        self.turn_tribe = EnumTribe.Imperius
 
         # Reset actors
         self._actor_controllers: List[IControllerActor] = []
@@ -87,20 +81,15 @@ class ControllerGame:
                 self.selected_controller.move(clicked_tile)
     
     def execute_turn(self, game: Game):
-        # for actor in self._actor_controllers:
-        #     if actor is not self.selected_controller:
-        #         actor.execute_turn(game)
         self.collection_cont_actors = CollectionActorControllers(self._actor_controllers)
         for tribe, cont_actors in self.collection_cont_actors:
-            if tribe == self.turn_tribe:
+            if tribe == self.game.turn_tribe:
                 for cont_actor in cont_actors:
-                    # if cont_actor.actor not in self.turn_actors_played:
                     cont_actor.execute_turn(game)
-                        # break
-        if self.turn_tribe == EnumTribe.Imperius:
-            self.turn_tribe = EnumTribe.Hoodrick
+        if self.game.turn_tribe == EnumTribe.Imperius:
+            self.game.turn_tribe = EnumTribe.Hoodrick
         else:
-            self.turn_tribe = EnumTribe.Imperius
+            self.game.turn_tribe = EnumTribe.Imperius
         self.game.turn += 1
 
     def update(self, game: Game, delta_time):

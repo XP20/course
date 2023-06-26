@@ -87,12 +87,14 @@ class ComponentButton:
         self.button_rect = Rect(newPos.x, newPos.y, self.button_rect.width, self.button_rect.height)
 
     def trigger_mouse(self, mouse_position, mouse_buttons):
-        status = self.__get_status(mouse_position, mouse_buttons)
-        if status == 2:
+        clicked = self.__get_click_once(mouse_position, mouse_buttons)
+        if clicked:
             for listener in self.listeners_click:
                 event = EventComponentButton()
                 event.linked_object = self.linked_object
                 event.linked_enum = self.linked_enum
+                event.left_click = mouse_buttons[0]
+                event.right_click = mouse_buttons[2]
 
                 # Try to call the function
                 try:
@@ -100,23 +102,20 @@ class ComponentButton:
                 except Exception as exc1:
                     logger.exception(exc1)
                     listener()
-
-        return status
     
-    def __get_status(self, mouse_position, mouse_buttons):
+    def __get_click_once(self, mouse_position, mouse_buttons):
         inX = (self.button_rect.x < mouse_position[0] < (self.button_rect.x + self.button_rect.width))
         inY = (self.button_rect.y < mouse_position[1] < (self.button_rect.y + self.button_rect.height))
         
-        result = 0
+        result = False
 
         if inX and inY:
             self.status = 1
-            result = 1
             if mouse_buttons[0]:
                 self.status = 2
                 if not self.was_clicked:
                     self.was_clicked = True
-                    result = 2
+                    result = True
             else:
                 self.was_clicked = False
         else:

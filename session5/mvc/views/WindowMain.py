@@ -1,11 +1,12 @@
-import random
 import time
-import math
+import uuid
+from typing import Dict, List
 import pygame
 from pygame import SRCALPHA, Rect, Surface
+from controllers.interfaces.IControllerActor import IControllerActor
+from models.Game import Game
 
 from models.Vector2D import Vector2D
-from models.MapTile import MapTile
 
 from models.enums.EnumActor import EnumActor
 from models.enums.EnumBuilding import EnumBuilding
@@ -76,6 +77,12 @@ class WindowMain:
             EnumBuilding.Sawmill: Vector2D(0, 0),
         }
 
+        # Buttons
+        self.ui_buttons: List[ComponentButton] = []
+
+        self.actor_buttons: Dict[str, ComponentButton] = {}
+        self.building_buttons: Dict[str, ComponentButton] = {}
+
         self.camSpeed = 18
         self.camPosition = Vector2D()
 
@@ -83,9 +90,85 @@ class WindowMain:
         
         self._controller = ControllerGame.instance()
         self._game = self._controller.new_game()
+        self.make_building_buttons()
+
+    def make_building_buttons(self):
+        for building in self._game.buildings:
+            building_uuid = str(building.uuid)
+            if building_uuid not in self.building_buttons:
+                button = ComponentButton(
+                    pygame.Rect(0, 0, ViewProperties.TILE_WIDTH, ViewProperties.TILE_HEIGHT), '', building, building.tribe)
+                button.add_listener_click(self.on_click_building)
+                self.building_buttons[building_uuid] = button
+
+    def make_actor_buttons(self):
+        for actor_cont in self._controller._actor_controllers:
+            actor = actor_cont.actor
+            actor_uuid = str(actor.uuid)
+            if actor_uuid not in self.actor_buttons:
+                button = ComponentButton(
+                    pygame.Rect(0, 0, ViewProperties.TILE_WIDTH, ViewProperties.TILE_HEIGHT), '', actor_cont)
+                button.add_listener_click(self.on_click_actor_cont)
+                self.actor_buttons[actor_uuid] = button
+
+    def on_click_actor_cont(self, event: EventComponentButton):
+        actor_cont = event.linked_object
+        if actor_cont:
+            if event.left_click:
+                self._controller.selected_controller = actor_cont
+
+    def on_click_building(self, event: EventComponentButton):
+        building = event.linked_object
+        if building:
+            tribe = building.tribe
+
+            if event.left_click:
+                pos = building.position
+                factory = self.resource_factories_by_tribes[tribe]
+                warrior = factory.create_actor(EnumActor.Warrior)
+
+                # Cant move to ControllerGame because circular import with ControllerActorWarrior and WindowMain
+                warriorController = ControllerActorWarrior(warrior)
+                warriorController.actor.position = Vector2D(pos.x, pos.y)
+                warriorController.actor.uuid = uuid.uuid4()
+                
+                self._game.actors.append(warrior)
+                self._controller._actor_controllers.append(warriorController)
+                self.make_actor_buttons()
 
     def on_click_new_game(self, event: EventComponentButton):
         self._game = self._controller.new_game()
+        self.make_building_buttons()
+
+    def on_click_save_game(self, event: EventComponentButton):
+        state_json = self._game.to_json(indent=4)
+        with open('state.json', 'w') as fp:
+            fp.write(state_json)
+
+    def on_click_load_game(self, event: EventComponentButton):
+        with open('state.json', 'r') as fp:
+            # Save old actor controllers
+            actorControllerDict: Dict[str, IControllerActor] = {}
+            for actor_cont in self._controller._actor_controllers:
+                actor = actor_cont.actor
+                uuid = str(actor.uuid)
+                actorControllerDict[uuid] = actor_cont
+
+            state_json = fp.read()
+            self._controller.game = Game.from_json(state_json)
+            self._game = self._controller.game
+
+            # Set the correct actor references
+            for actor in self._game.actors:
+                uuid = str(actor.uuid)
+                actor_cont = actorControllerDict[uuid]
+                actor_cont.set_actor(actor)
+
+            # Make building buttons again
+            self.building_buttons.clear()
+            self.make_building_buttons()
+            
+            #! SAVING POSITION WORKS BUT LOADING DOESNT UPDATE POSITION + SAVING AGAIN DOESNT WORK
 
     def on_key_press(self, key):
         if key == keyboard.Key.right:
@@ -96,8 +179,6 @@ class WindowMain:
             WindowMain.instance().camPosition.y += ViewProperties.CAM_SPEED
         if key == keyboard.Key.down:
             WindowMain.instance().camPosition.y -= ViewProperties.CAM_SPEED
-        # if key == keyboard.Key.space:
-        #     WindowMain.instance().execute_turn()
         if key == keyboard.Key.esc:
             WindowMain.instance().is_game_running = False
     
@@ -110,13 +191,28 @@ class WindowMain:
             on_release=self.on_key_release)
         listener.start()
 
-        # New game button
         pygame.font.init()
+        
+        # New game button
         self.ui_button_new_game = ComponentButton(
-            Rect(ViewProperties.SCREEN_WIDTH - 110, 5, 105, 35),
+            Rect(ViewProperties.SCREEN_WIDTH - 120, 5, 115, 35),
             'New Game'
         )
         self.ui_button_new_game.add_listener_click(self.on_click_new_game)
+
+        # Save game button
+        self.ui_button_save_game = ComponentButton(
+            Rect(ViewProperties.SCREEN_WIDTH - 120, 43, 115, 35),
+            'Save Game'
+        )
+        self.ui_button_save_game.add_listener_click(self.on_click_save_game)
+
+        # Save game button
+        self.ui_button_load_game = ComponentButton(
+            Rect(ViewProperties.SCREEN_WIDTH - 120, 81, 115, 35),
+            'Load Game'
+        )
+        self.ui_button_load_game.add_listener_click(self.on_click_load_game)
 
         # Do turn button
         self.ui_button_do_turn = ComponentButton(
@@ -124,6 +220,12 @@ class WindowMain:
             'Do Turn'
         )
         self.ui_button_do_turn.add_listener_click(self.execute_turn)
+
+        # Add buttons to ui_buttons list
+        self.ui_buttons.append(self.ui_button_new_game)
+        self.ui_buttons.append(self.ui_button_save_game)
+        self.ui_buttons.append(self.ui_button_load_game)
+        self.ui_buttons.append(self.ui_button_do_turn)
 
         # Tribe turn surface
         self.font = pygame.font.Font('freesansbold.ttf', 18)
@@ -197,34 +299,26 @@ class WindowMain:
         # Handle new game button
         mouse_pos = pygame.mouse.get_pos()
         mouse_buttons = pygame.mouse.get_pressed()
-        self.ui_button_new_game.trigger_mouse(mouse_pos, mouse_buttons)
-        self.ui_button_do_turn.trigger_mouse(mouse_pos, mouse_buttons)
 
-        # Handle actor buttons
+        for button in self.ui_buttons:
+            button.trigger_mouse(mouse_pos, mouse_buttons)
+
+        # Move actor buttons
         for controller in self._controller._actor_controllers:
-            if controller.actor.button != None:
-                controller.actor.button.move(ViewProperties.toTilePos(controller.actor.position.x, controller.actor.position.y) + self.camPosition)
-                if controller.actor.button.trigger_mouse(mouse_pos, mouse_buttons) == 2:
-                    self._controller.selected_controller = controller
+            actor = controller.actor
+            actor_uuid = str(actor.uuid)
+            button = self.actor_buttons[actor_uuid]
+            if button != None:
+                button.move(ViewProperties.toTilePos(actor.position.x, actor.position.y) + self.camPosition)
+                button.trigger_mouse(mouse_pos, mouse_buttons)
 
-        # Handle city buttons
+        # Move city buttons
         for building in self._game.buildings:
-            if building.button != None and building.building_type == EnumBuilding.City:
-                building.button.move(ViewProperties.toTilePos(building.position.x, building.position.y) + self.camPosition)
-                if building.button.trigger_mouse(mouse_pos, mouse_buttons) == 2:
-                    pos = building.position
-
-                    factory = self.resource_factories_by_tribes[building.tribe]
-                    warrior = factory.create_actor(EnumActor.Warrior)
-
-                    # Cant move to ControllerGame because self.resource_factories_by_tribe and circular import with ControllerActorWarrior
-                    warriorController = ControllerActorWarrior(warrior)
-                    warriorController.actor.position = Vector2D(pos.x, pos.y)
-                    warriorController.actor.button = ComponentButton(
-                        pygame.Rect(0, 0, ViewProperties.TILE_WIDTH, ViewProperties.TILE_HEIGHT), '')
-
-                    self._game.actors.append(warrior)
-                    self._controller._actor_controllers.append(warriorController)
+            building_uuid = str(building.uuid)
+            button = self.building_buttons[building_uuid]
+            if button != None and building.building_type == EnumBuilding.City:
+                button.move(ViewProperties.toTilePos(building.position.x, building.position.y) + self.camPosition)
+                button.trigger_mouse(mouse_pos, mouse_buttons)
 
     def execute_turn(self, event: EventComponentButton):
         self._controller.execute_turn(self._game)
@@ -263,65 +357,98 @@ class WindowMain:
                 self.draw_surface(tileSurface, endX, endY)
 
             # Render buildings for row
-            buildings = self._game.buildings
-            buildings.sort(key= lambda x: x.position.y)
-            for building in buildings:
-                building_type = building.building_type
-                level = building.level
-                tribe = building.tribe
+            # buildings = self._game.buildings
+            # for building in buildings:
+            #     building_type = building.building_type
+            #     level = building.level
+            #     tribe = building.tribe
                 
-                x = building.position.x * ViewProperties.TILE_WIDTH + tempCamPos.x + self.offsets_by_building[building_type].x
-                y = building.position.y * ViewProperties.TILE_HEIGHT + tempCamPos.y + self.offsets_by_building[building_type].y
+            #     x = building.position.x * ViewProperties.TILE_WIDTH + tempCamPos.x + self.offsets_by_building[building_type].x
+            #     y = building.position.y * ViewProperties.TILE_HEIGHT + tempCamPos.y + self.offsets_by_building[building_type].y
 
-                if building.position.y % 2 == 1:
-                    x += ViewProperties.TILE_WIDTH / 2
+            #     if building.position.y % 2 == 1:
+            #         x += ViewProperties.TILE_WIDTH / 2
 
-                renderAhead = 0
-                if building_type == EnumBuilding.Sawmill:
-                    renderAhead = 2
+            #     renderAhead = 0
+            #     if building_type == EnumBuilding.Sawmill:
+            #         renderAhead = 2
 
-                if building.position.y + renderAhead == i:
-                    factory = self.resource_factories_by_tribes[tribe]
+            #     if building.position.y + renderAhead == i:
+            #         factory = self.resource_factories_by_tribes[tribe]
                     
-                    building_key = (building_type, tribe, level)
-                    building_surface: Surface
+            #         building_key = (building_type, tribe, level)
+            #         building_surface: Surface
                     
-                    if building_key in self.surfaces_by_building:
-                        building_surface = self.surfaces_by_building[building_key]
-                    else:
-                        building_surface = factory.get_building(building_type, level)
-                        self.surfaces_by_building[building_key] = building_surface
+            #         if building_key in self.surfaces_by_building:
+            #             building_surface = self.surfaces_by_building[building_key]
+            #         else:
+            #             building_surface = factory.get_building(building_type, level)
+            #             self.surfaces_by_building[building_key] = building_surface
 
-                    self.draw_surface(building_surface, x, y)
+            #         self.draw_surface(building_surface, x, y)
 
             # Render actors for row
-            actor_controllers = self._controller._actor_controllers
-            actor_controllers.sort(key= lambda x: x.actor.position.y)
-            for actor_controller in actor_controllers:
-                actor = actor_controller.actor
-                actor_type = actor.actor_type
-                x = actor_controller.animatedPos.x + tempCamPos.x + self.offsets_by_actor[actor_type].x
-                y = actor_controller.animatedPos.y + tempCamPos.y + self.offsets_by_actor[actor_type].y
+            # actor_controllers = self._controller._actor_controllers
+            # for actor_controller in actor_controllers:
+            #     actor = actor_controller.actor
+            #     actor_type = actor.actor_type
+            #     x = actor_controller.animatedPos.x + tempCamPos.x + self.offsets_by_actor[actor_type].x
+            #     y = actor_controller.animatedPos.y + tempCamPos.y + self.offsets_by_actor[actor_type].y
                 
-                orderY = actor_controller.animatedPos.y / ViewProperties.TILE_HEIGHT
-                if math.ceil(orderY) == i:
-                    actorSurface = self.surfaces_by_actor[actor_type]
-                    self.draw_surface(actorSurface, x, y)
+            #     orderY = actor_controller.animatedPos.y / ViewProperties.TILE_HEIGHT
+            #     if math.ceil(orderY) == i:
+            #         actorSurface = self.surfaces_by_actor[actor_type]
+            #         self.draw_surface(actorSurface, x, y)
 
-            # Draw UI
-            self.ui_button_new_game.draw(self.screen)
-            self.ui_button_do_turn.draw(self.screen)
+        for elem in (self._game.buildings + self._controller._actor_controllers):
+            surface = None
+            x = 0
+            y = 0
+            if elem in self._game.buildings:
+                building_type = elem.building_type
+                level = elem.level
+                tribe = elem.tribe
+                
+                x = elem.position.x * ViewProperties.TILE_WIDTH + tempCamPos.x + self.offsets_by_building[building_type].x
+                y = elem.position.y * ViewProperties.TILE_HEIGHT + tempCamPos.y + self.offsets_by_building[building_type].y
 
-            # Show which tribe's turn it is
-            if self.ui_text_tribe_turn is not self._controller.turn_tribe:
-                self.ui_text_tribe_turn_surface = self.font.render('Tribe: ' + self._controller.turn_tribe, True, (255, 255, 255))
-                self.ui_text_tribe_turn = self._controller.turn_tribe
-            self.draw_surface(self.ui_text_tribe_turn_background, 5, 5)
-            self.draw_surface(self.ui_text_tribe_turn_surface, 10, 10)
+                if elem.position.y % 2 == 1:
+                    x += ViewProperties.TILE_WIDTH / 2
 
-            # Show which turn it is
-            if self.ui_text_turn_count is not self._controller.game.turn:
-                self.ui_text_turn_count_surface = self.font.render('Turn: ' + str(self._controller.game.turn), True, (255, 255, 255))
-                self.ui_text_turn_count = self._controller.game.turn
-            self.draw_surface(self.ui_text_turn_count_background, 170, 5)
-            self.draw_surface(self.ui_text_turn_count_surface, 175, 10)
+                factory = self.resource_factories_by_tribes[tribe]
+                    
+                building_key = (building_type, tribe, level)
+                    
+                if building_key in self.surfaces_by_building:
+                    surface = self.surfaces_by_building[building_key]
+                else:
+                    surface = factory.get_building(building_type, level)
+                    self.surfaces_by_building[building_key] = surface
+            elif elem in self._controller._actor_controllers:
+                actor = elem.actor
+                actor_type = actor.actor_type
+                x = elem.animatedPos.x + tempCamPos.x + self.offsets_by_actor[actor_type].x
+                y = elem.animatedPos.y + tempCamPos.y + self.offsets_by_actor[actor_type].y
+                
+                surface = self.surfaces_by_actor[actor_type]
+
+            if surface != None:
+                self.draw_surface(surface, x, y)
+
+        # Draw UI
+        for button in self.ui_buttons:
+            button.draw(self.screen)
+
+        # Show which tribe's turn it is
+        if self.ui_text_tribe_turn is not self._controller.game.turn_tribe:
+            self.ui_text_tribe_turn_surface = self.font.render('Tribe: ' + self._controller.game.turn_tribe, True, (255, 255, 255))
+            self.ui_text_tribe_turn = self._controller.game.turn_tribe
+        self.draw_surface(self.ui_text_tribe_turn_background, 5, 5)
+        self.draw_surface(self.ui_text_tribe_turn_surface, 10, 10)
+
+        # Show which turn it is
+        if self.ui_text_turn_count is not self._controller.game.turn:
+            self.ui_text_turn_count_surface = self.font.render('Turn: ' + str(self._controller.game.turn), True, (255, 255, 255))
+            self.ui_text_turn_count = self._controller.game.turn
+        self.draw_surface(self.ui_text_turn_count_background, 170, 5)
+        self.draw_surface(self.ui_text_turn_count_surface, 175, 10)

@@ -10,9 +10,6 @@ from models.enums.EnumTribe import EnumTribe
 from views.components.ComponentButton import ComponentButton
 from views.factories.interfaces.IResourceFactory import IResourceFactory
 
-tileWidth = 52
-tileHeight = 15
-
 class FactoryHoodrick(IResourceFactory):
     def __init__(self):
         super().__init__()

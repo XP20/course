@@ -21,6 +21,9 @@ class ControllerActorWarrior(IControllerActor):
     @property
     def actor(self) -> Actor:
         return self._actor
+    
+    def set_actor(self, actor: Actor):
+        self._actor = actor
 
     def update(self, delta_time):
         tilePos = ViewProperties.toTilePos(self.actor.position.x, self.actor.position.y)
@@ -62,10 +65,9 @@ class ControllerActorWarrior(IControllerActor):
                     self.actor.position = newPos
 
                     # Removing backwards direction so dont move back
-                    try:
+                    removeDir = Vector2D(-direction.x, -direction.y)
+                    if removeDir in directions:
                         directions.remove(Vector2D(-direction.x, -direction.y))
-                    except:
-                        pass
                 else:
                     directions.remove(direction)
             else:

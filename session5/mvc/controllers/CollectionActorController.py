@@ -2,7 +2,6 @@ from typing import List, OrderedDict
 
 from controllers.interfaces.IControllerActor import IControllerActor
 
-
 class CollectionActorControllers:
     def __init__(
             self,
@@ -12,7 +11,7 @@ class CollectionActorControllers:
         self.actor_controllers = actor_controllers
         self.actor_groups = OrderedDict()
         self.actor_groups_keys = []
-        self. idx = 0
+        self.idx = 0
 
     def __len__(self):
         length = len(self.actor_groups_keys)

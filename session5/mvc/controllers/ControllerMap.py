@@ -2,7 +2,7 @@ import random
 from typing import List
 from loguru import logger
 
-import pygame
+import uuid
 from models.Game import Game
 from models.MapBuilding import MapBuilding
 from models.MapTile import MapTile
@@ -10,10 +10,6 @@ from models.Vector2D import Vector2D
 from models.enums.EnumBuilding import EnumBuilding
 from models.enums.EnumMapTile import EnumMapTile
 from models.enums.EnumTribe import EnumTribe
-from views.components.ComponentButton import ComponentButton
-
-tileWidth = 52
-tileHeight = 15
 
 class ControllerMap:
     @staticmethod
@@ -59,8 +55,8 @@ class ControllerMap:
                 building.level = 1
                 building.position = Vector2D(random.randint(0, game.map_size.x - 1), random.randint(0, game.map_size.y - 1))
                 building.tribe = random.choice([EnumTribe.Imperius, EnumTribe.Hoodrick])
-                building.button = ComponentButton(
-                    pygame.Rect(0, 0, tileWidth, tileHeight), '')
+                building.uuid = uuid.uuid4()
+                
                 game.buildings.append(building)
             
             is_success = True
