@@ -11,7 +11,7 @@ from models.enums.EnumMapTile import EnumMapTile
 from models.MapTile import MapTile
 from views.ViewProperties import ViewProperties
 
-class ControllerActorRider(IControllerActor):
+class ControllerActorKnight(IControllerActor):
     def __init__(self, actor: Actor):
         self._actor = actor
 

@@ -3,6 +3,9 @@ import uuid
 from typing import Dict, List
 import pygame
 from pygame import SRCALPHA, Rect, Surface
+from controllers.ControllerActorRider import ControllerActorRider
+from controllers.ControllerActorWarrior import ControllerActorWarrior
+from controllers.ControllerActorKnight import ControllerActorKnight
 from controllers.interfaces.IControllerActor import IControllerActor
 from models.Game import Game
 
@@ -14,7 +17,6 @@ from models.enums.EnumMapTile import EnumMapTile
 from models.enums.EnumTribe import EnumTribe
 
 from controllers.ControllerGame import ControllerGame
-from controllers.ControllerActorWarrior import ControllerActorWarrior
 from views.ViewProperties import ViewProperties
 from views.components.EventComponentButton import EventComponentButton
 
@@ -77,6 +79,13 @@ class WindowMain:
             EnumBuilding.Sawmill: Vector2D(0, 0),
         }
 
+        # Actor controllers by actor type
+        self.controller_by_actor_type: Dict[EnumActor, callable] = {
+            EnumActor.Warrior: ControllerActorWarrior,
+            EnumActor.Rider: ControllerActorRider,
+            EnumActor.Knight: ControllerActorKnight,
+        }
+
         # Buttons
         self.ui_buttons: List[ComponentButton] = []
 
@@ -114,27 +123,25 @@ class WindowMain:
     def on_click_actor_cont(self, event: EventComponentButton):
         actor_cont = event.linked_object
         if actor_cont:
-            if event.left_click:
-                self._controller.selected_controller = actor_cont
+            self._controller.selected_controller = actor_cont
 
     def on_click_building(self, event: EventComponentButton):
         building = event.linked_object
         if building:
             tribe = building.tribe
 
-            if event.left_click:
-                pos = building.position
-                factory = self.resource_factories_by_tribes[tribe]
-                warrior = factory.create_actor(EnumActor.Warrior)
+            pos = building.position
+            factory = self.resource_factories_by_tribes[tribe]
+            warrior = factory.create_actor(EnumActor.Warrior)
 
-                # Cant move to ControllerGame because circular import with ControllerActorWarrior and WindowMain
-                warriorController = ControllerActorWarrior(warrior)
-                warriorController.actor.position = Vector2D(pos.x, pos.y)
-                warriorController.actor.uuid = uuid.uuid4()
-                
-                self._game.actors.append(warrior)
-                self._controller._actor_controllers.append(warriorController)
-                self.make_actor_buttons()
+            # Cant move to ControllerGame because circular import with ControllerActorWarrior and WindowMain
+            warriorController = ControllerActorWarrior(warrior)
+            warriorController.actor.position = Vector2D(pos.x, pos.y)
+            warriorController.actor.uuid = uuid.uuid4()
+            
+            self._game.actors.append(warrior)
+            self._controller._actor_controllers.append(warriorController)
+            self.make_actor_buttons()
 
     def on_click_new_game(self, event: EventComponentButton):
         self._game = self._controller.new_game()
@@ -147,29 +154,26 @@ class WindowMain:
 
     def on_click_load_game(self, event: EventComponentButton):
         with open('state.json', 'r') as fp:
-            # Save old actor controllers
-            actorControllerDict: Dict[str, IControllerActor] = {}
-            for actor_cont in self._controller._actor_controllers:
-                actor = actor_cont.actor
-                uuid = str(actor.uuid)
-                actorControllerDict[uuid] = actor_cont
-
+            # Read json
             state_json = fp.read()
             self._controller.game = Game.from_json(state_json)
             self._game = self._controller.game
 
-            # Set the correct actor references
+            # Remake actor controllers
+            self._controller.selected_controller = None
+            self._controller._actor_controllers.clear()
             for actor in self._game.actors:
-                uuid = str(actor.uuid)
-                actor_cont = actorControllerDict[uuid]
-                actor_cont.set_actor(actor)
+                actor_type = actor.actor_type
+                controller = self.controller_by_actor_type[actor_type](actor)
+                self._controller._actor_controllers.append(controller)
 
-            # Make building buttons again
+            # Remake buttons
+            self.actor_buttons.clear()
+            self.make_actor_buttons()
+
             self.building_buttons.clear()
             self.make_building_buttons()
-            
-            #! SAVING POSITION WORKS BUT LOADING DOESNT UPDATE POSITION + SAVING AGAIN DOESNT WORK
-
+        
     def on_key_press(self, key):
         if key == keyboard.Key.right:
             WindowMain.instance().camPosition.x -= ViewProperties.CAM_SPEED

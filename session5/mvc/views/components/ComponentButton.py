@@ -93,8 +93,6 @@ class ComponentButton:
                 event = EventComponentButton()
                 event.linked_object = self.linked_object
                 event.linked_enum = self.linked_enum
-                event.left_click = mouse_buttons[0]
-                event.right_click = mouse_buttons[2]
 
                 # Try to call the function
                 try:
