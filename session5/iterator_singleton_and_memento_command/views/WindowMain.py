@@ -6,6 +6,7 @@ from pygame import SRCALPHA, Rect, Surface
 from controllers.ControllerActorRider import ControllerActorRider
 from controllers.ControllerActorWarrior import ControllerActorWarrior
 from controllers.ControllerActorKnight import ControllerActorKnight
+from controllers.commands.CommandActorCreate import CommandActorCreate
 from models.Game import Game
 
 from models.Vector2D import Vector2D
@@ -103,14 +104,15 @@ class WindowMain:
                 self.building_buttons[building_uuid] = button
 
     def make_actor_buttons(self):
+        self.actor_buttons.clear()
         for actor_cont in self._controller._actor_controllers:
             actor = actor_cont.actor
             actor_uuid = str(actor.uuid)
-            if actor_uuid not in self.actor_buttons:
-                button = ComponentButton(
-                    pygame.Rect(0, 0, ViewProperties.TILE_WIDTH, ViewProperties.TILE_HEIGHT), '', actor_cont)
-                button.add_listener_click(self.on_click_actor_cont)
-                self.actor_buttons[actor_uuid] = button
+
+            button = ComponentButton(
+                pygame.Rect(0, 0, ViewProperties.TILE_WIDTH, ViewProperties.TILE_HEIGHT), '', actor_cont)
+            button.add_listener_click(self.on_click_actor_cont)
+            self.actor_buttons[actor_uuid] = button
 
     def on_click_actor_cont(self, event: EventComponentButton):
         actor_cont = event.linked_object
@@ -124,15 +126,9 @@ class WindowMain:
 
             pos = building.position
             factory = self.resource_factories_by_tribes[tribe]
-            warrior = factory.create_actor(EnumActor.Warrior)
-
-            # Cant move to ControllerGame because circular import with ControllerActorWarrior and WindowMain
-            warriorController = ControllerActorWarrior(warrior)
-            warriorController.actor.position = Vector2D(pos.x, pos.y)
-            warriorController.actor.uuid = uuid.uuid4()
-            
-            self._game.actors.append(warrior)
-            self._controller._actor_controllers.append(warriorController)
+            actor_uuid = str(uuid.uuid4())
+            command = CommandActorCreate(self._game, EnumActor.Warrior, pos, factory, actor_uuid)
+            self._controller.execute_command(command)
             self.make_actor_buttons()
 
     def on_click_new_game(self, event: EventComponentButton):
@@ -166,6 +162,12 @@ class WindowMain:
 
         self.building_buttons.clear()
         self.make_building_buttons()
+
+    def on_click_undo_move(self, event: EventComponentButton):
+        self._controller.undo_command()
+
+    def on_click_redo_move(self, event: EventComponentButton):
+        self._controller.redo_command()
 
     def on_key_press(self, key):
         if key == keyboard.Key.right:
@@ -204,7 +206,7 @@ class WindowMain:
         )
         self.ui_button_save_game.add_listener_click(self.on_click_save_game)
 
-        # Save game button
+        # Load game button
         self.ui_button_load_game = ComponentButton(
             Rect(ViewProperties.SCREEN_WIDTH - 120, 81, 115, 35),
             'Load Game'
@@ -217,12 +219,28 @@ class WindowMain:
             'Do Turn'
         )
         self.ui_button_do_turn.add_listener_click(self.execute_turn)
+        
+        # Undo button
+        self.ui_button_undo = ComponentButton(
+            Rect(5, 68, 60, 25),
+            'Undo'
+        )
+        self.ui_button_undo.add_listener_click(self.on_click_undo_move)
+        
+        # Redo button
+        self.ui_button_redo = ComponentButton(
+            Rect(5, 95, 60, 25),
+            'Redo'
+        )
+        self.ui_button_redo.add_listener_click(self.on_click_redo_move)
 
         # Add buttons to ui_buttons list
         self.ui_buttons.append(self.ui_button_new_game)
         self.ui_buttons.append(self.ui_button_save_game)
         self.ui_buttons.append(self.ui_button_load_game)
         self.ui_buttons.append(self.ui_button_do_turn)
+        self.ui_buttons.append(self.ui_button_undo)
+        self.ui_buttons.append(self.ui_button_redo)
 
         # Tribe turn surface
         self.font = pygame.font.Font('freesansbold.ttf', 18)

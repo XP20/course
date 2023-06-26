@@ -1,3 +1,4 @@
+import uuid
 import pygame
 from pygame import Surface
 from loguru import logger
@@ -74,6 +75,7 @@ class FactoryHoodrick(IResourceFactory):
             if enum_actor == EnumActor.Warrior:
                 result = Actor()
 
+                result.uuid = uuid.uuid4()
                 result.actor_type = EnumActor.Warrior
                 result.tribe = EnumTribe.Hoodrick
 
@@ -87,6 +89,7 @@ class FactoryHoodrick(IResourceFactory):
             elif enum_actor == EnumActor.Knight:
                 result = Actor()
 
+                result.uuid = uuid.uuid4()
                 result.actor_type = EnumActor.Knight
                 result.tribe = EnumTribe.Hoodrick
                 
@@ -100,6 +103,7 @@ class FactoryHoodrick(IResourceFactory):
             elif enum_actor == EnumActor.Rider:
                 result = Actor()
 
+                result.uuid = uuid.uuid4()
                 result.actor_type = EnumActor.Rider
                 result.tribe = EnumTribe.Hoodrick
 

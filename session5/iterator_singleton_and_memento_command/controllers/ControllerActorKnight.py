@@ -1,4 +1,5 @@
 import random
+from controllers.commands.CommandActorMove import CommandActorMove
 
 from controllers.interfaces.IControllerActor import IControllerActor
 from models.Actor import Actor
@@ -8,7 +9,7 @@ from models.enums.EnumMapTile import EnumMapTile
 from models.MapTile import MapTile
 from views.ViewProperties import ViewProperties
 
-class ControllerActorWarrior(IControllerActor):
+class ControllerActorKnight(IControllerActor):
     def __init__(self, actor: Actor):
         self._actor = actor
 
@@ -68,9 +69,11 @@ class ControllerActorWarrior(IControllerActor):
                     directions.remove(direction)
             else:
                 directions.remove(direction)
-        # ControllerGame.instance().game.stars += 1
-
-    def move(self, targetTile: MapTile):
-        tile_type = targetTile.tile_type
-        if tile_type != EnumMapTile.Mountain:
-            self.actor.position = targetTile.position
+        from controllers.ControllerGame import ControllerGame
+        ControllerGame.instance().game.stars += 1
+    
+    def move(self, target_tile: MapTile):
+        target_pos = target_tile.position
+        from controllers.ControllerGame import ControllerGame
+        command = CommandActorMove(self.actor, ControllerGame.instance().game, target_pos)
+        ControllerGame.instance().execute_command(command)

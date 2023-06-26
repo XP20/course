@@ -7,7 +7,7 @@ class ViewProperties:
     SCREEN_HEIGHT = 500
     CULL_MARGIN = 100
     CAM_SPEED = 10
-    ANIMATION_TIME = 0.2
+    ANIMATION_TIME = 24
 
     @staticmethod
     def toTilePos(x, y):

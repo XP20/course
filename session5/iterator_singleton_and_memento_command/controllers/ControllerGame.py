@@ -5,12 +5,12 @@ import time
 from typing import Dict, List
 import uuid
 
-import pygame
 from controllers.CollectionActorController import CollectionActorControllers
 from controllers.ControllerActorKnight import ControllerActorKnight
 from controllers.ControllerActorRider import ControllerActorRider
 from controllers.ControllerActorWarrior import ControllerActorWarrior
 from controllers.ControllerMap import ControllerMap
+from controllers.commands.interfaces.ICommand import ICommand
 
 from models.Game import Game
 from models.MapBuilding import MapBuilding
@@ -42,6 +42,8 @@ class ControllerGame:
         self._actor_controllers: List[IControllerActor] = []
         self.selected_controller: IControllerActor = None
         self.collection_cont_actors = None
+        self.command_undo_stack: List[ICommand] = []
+        self.command_redo_stack: List[ICommand] = []
         self._size_x = 100
         self._size_y = 100
 
@@ -55,6 +57,8 @@ class ControllerGame:
     def new_game(self):
         random.seed(time.time())
         self.game = Game()
+        self.command_undo_stack: List[ICommand] = []
+        self.command_redo_stack: List[ICommand] = []
 
         # Reset actors
         self._actor_controllers: List[IControllerActor] = []
@@ -106,6 +110,23 @@ class ControllerGame:
     def update(self, delta_time):
         for actor in self._actor_controllers:
             actor.update(delta_time)
+
+    def execute_command(self, command: ICommand):
+        self.command_undo_stack.append(command)
+        self.command_redo_stack.clear()
+        command.execute()
+
+    def undo_command(self):
+        if len(self.command_undo_stack) > 0:
+            command = self.command_undo_stack.pop()
+            self.command_redo_stack.append(command)
+            command.undo()
+
+    def redo_command(self):
+        if len(self.command_redo_stack) > 0:
+            command = self.command_redo_stack.pop()
+            self.command_undo_stack.append(command)
+            command.execute()
 
     def setup_game(self):
         # Remake actor controllers

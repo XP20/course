@@ -9,6 +9,9 @@ class Vector2D:
     x: int = 0
     y: int = 0
 
+    def copy(self):
+        return Vector2D(self.x, self.y)
+
     def __add__(self, other):
         return Vector2D(self.x + other.x, self.y + other.y)
 

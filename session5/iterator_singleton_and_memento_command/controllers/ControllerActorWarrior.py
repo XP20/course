@@ -1,4 +1,6 @@
+import math
 import random
+from controllers.commands.CommandActorMove import CommandActorMove
 
 from controllers.interfaces.IControllerActor import IControllerActor
 from models.Actor import Actor
@@ -8,7 +10,7 @@ from models.enums.EnumMapTile import EnumMapTile
 from models.MapTile import MapTile
 from views.ViewProperties import ViewProperties
 
-class ControllerActorRider(IControllerActor):
+class ControllerActorWarrior(IControllerActor):
     def __init__(self, actor: Actor):
         self._actor = actor
 
@@ -24,11 +26,22 @@ class ControllerActorRider(IControllerActor):
     def update(self, delta_time):
         tilePos = ViewProperties.toTilePos(self.actor.position.x, self.actor.position.y)
         if self.animatedPos != tilePos:
-            self.elapsed += delta_time * (1/ViewProperties.ANIMATION_TIME)
-            self.animatedPos = self.animatedPos.lerpTo(tilePos, self.elapsed)
-        if self.elapsed > 1:
-            self.animatedPos = tilePos
-            self.elapsed = 0
+            to_destination = tilePos - self.animatedPos
+            magnitude = math.sqrt(to_destination.x**2 + to_destination.y**2)
+            anim_step = Vector2D(to_destination.x / magnitude, to_destination.y / magnitude)
+            anim_step *= ViewProperties.ANIMATION_TIME
+
+            if abs(anim_step.x) < abs(to_destination.x) and abs(anim_step.y) < abs(to_destination.y):
+                self.animatedPos += anim_step
+            else:
+                self.animatedPos = tilePos
+
+        # if self.animatedPos != tilePos:
+        #     self.elapsed += delta_time * (1/ViewProperties.ANIMATION_TIME)
+        #     self.animatedPos = self.animatedPos.lerpTo(tilePos, self.elapsed)
+        # if self.elapsed > 1:
+        #     self.animatedPos = tilePos
+        #     self.elapsed = 0
 
     def execute_turn(self, game: Game):
         directions = [Vector2D(1,1), Vector2D(-1,-1), Vector2D(0,1), Vector2D(0,-1)]
@@ -68,9 +81,11 @@ class ControllerActorRider(IControllerActor):
                     directions.remove(direction)
             else:
                 directions.remove(direction)
-        # ControllerGame.instance().game.stars += 1
-    
-    def move(self, targetTile: MapTile):
-        tile_type = targetTile.tile_type
-        if tile_type != EnumMapTile.Mountain:
-            self.actor.position = targetTile.position
+        from controllers.ControllerGame import ControllerGame
+        ControllerGame.instance().game.stars += 1
+
+    def move(self, target_tile: MapTile):
+        target_pos = target_tile.position
+        from controllers.ControllerGame import ControllerGame
+        command = CommandActorMove(self.actor, ControllerGame.instance().game, target_pos)
+        ControllerGame.instance().execute_command(command)
