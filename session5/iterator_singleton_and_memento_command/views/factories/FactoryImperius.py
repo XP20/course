@@ -24,8 +24,8 @@ class FactoryImperius(IResourceFactory):
             # EnumActor.Rider: pygame.image.load(f'resources/Tribes/Imperius/Units/rider.png').convert_alpha(),
             # EnumActor.Knight: pygame.image.load(f'resources/Tribes/Imperius/Units/knight.png').convert_alpha()
             EnumActor.Warrior: pygame.image.load('./resources/Units/Sprites/Warrior.png').convert_alpha(),
-            EnumActor.Rider: pygame.image.load('./resources/Units/Sprites/Knight.png').convert_alpha(),
-            EnumActor.Knight: pygame.image.load('./resources/Units/Sprites/Rider.png').convert_alpha()
+            EnumActor.Rider: pygame.image.load('./resources/Units/Sprites/Rider.png').convert_alpha(),
+            EnumActor.Knight: pygame.image.load('./resources/Units/Sprites/Knight.png').convert_alpha()
         }
 
     def get_building(self, enum_building: EnumBuilding, level: int) -> Tuple[Surface, None]:

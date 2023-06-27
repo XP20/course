@@ -67,6 +67,7 @@ class WindowMain:
         self.offsets_by_actor = {
             EnumActor.Rider: Vector2D(6, -22),
             EnumActor.Warrior: Vector2D(4, -20),
+            EnumActor.Knight: Vector2D(6, -18),
         }
 
         self.offsets_by_building = {
@@ -76,6 +77,7 @@ class WindowMain:
 
         # Buttons
         self.ui_buttons: List[ComponentButton] = []
+        self.ui_buttons_make_actor: List[ComponentButton] = []
 
         self.actor_buttons: Dict[str, ComponentButton] = {}
         self.building_buttons: Dict[str, ComponentButton] = {}
@@ -115,16 +117,10 @@ class WindowMain:
             self._controller.selected_controller = actor_cont
 
     def on_click_building(self, event: EventComponentButton):
+        self.ui_button_make_actor_visible = True
         building = event.linked_object
-        if building:
-            tribe = building.tribe
-
-            pos = building.position
-            factory = self.resource_factories_by_tribes[tribe]
-            actor_uuid = str(uuid.uuid4())
-            command = CommandActorCreate(self._game, EnumActor.Warrior, pos, factory, actor_uuid)
-            self._controller.execute_command(command)
-            self.make_actor_buttons()
+        for button in self.ui_buttons_make_actor:
+            button.linked_object = building
 
     def on_click_new_game(self, event: EventComponentButton):
         self._game = self._controller.new_game()
@@ -154,6 +150,43 @@ class WindowMain:
 
     def on_click_redo_move(self, event: EventComponentButton):
         self._controller.redo_command()
+
+    def on_click_make_warrior(self, event: EventComponentButton):
+        self.ui_button_make_actor_visible = False
+        building = event.linked_object
+        if building:
+            tribe = building.tribe
+            pos = building.position
+            factory = self.resource_factories_by_tribes[tribe]
+            actor_uuid = str(uuid.uuid4())
+            command = CommandActorCreate(self._game, EnumActor.Warrior, pos, factory, actor_uuid)
+            self._controller.execute_command(command)
+            self.make_actor_buttons()
+
+    def on_click_make_rider(self, event: EventComponentButton):
+        self.ui_button_make_actor_visible = False
+        building = event.linked_object
+        if building:
+            tribe = building.tribe
+            pos = building.position
+            factory = self.resource_factories_by_tribes[tribe]
+            actor_uuid = str(uuid.uuid4())
+            command = CommandActorCreate(self._game, EnumActor.Rider, pos, factory, actor_uuid)
+            self._controller.execute_command(command)
+            self.make_actor_buttons()
+
+    def on_click_make_knight(self, event: EventComponentButton):
+        self.ui_button_make_actor_visible = False
+        building = event.linked_object
+        if building:
+            tribe = building.tribe
+            pos = building.position
+            factory = self.resource_factories_by_tribes[tribe]
+            actor_uuid = str(uuid.uuid4())
+            command = CommandActorCreate(self._game, EnumActor.Knight, pos, factory, actor_uuid)
+            self._controller.execute_command(command)
+            self.make_actor_buttons()
+
 
     def on_key_press(self, key):
         if key == keyboard.Key.right:
@@ -227,6 +260,34 @@ class WindowMain:
         self.ui_buttons.append(self.ui_button_do_turn)
         self.ui_buttons.append(self.ui_button_undo)
         self.ui_buttons.append(self.ui_button_redo)
+
+        self.ui_button_make_actor_visible = False
+        self.ui_buttons_make_actor: List[ComponentButton] = []
+
+        # Make warrior button
+        self.ui_button_make_warrior = ComponentButton(
+            Rect(5, ViewProperties.SCREEN_HEIGHT - 35, 80, 30),
+            'Warrior'
+        )
+        self.ui_button_make_warrior.add_listener_click(self.on_click_make_warrior)
+
+        # Make rider button
+        self.ui_button_make_rider = ComponentButton(
+            Rect(90, ViewProperties.SCREEN_HEIGHT - 35, 80, 30),
+            'Rider'
+        )
+        self.ui_button_make_rider.add_listener_click(self.on_click_make_rider)
+
+        # Make knight button
+        self.ui_button_make_knight = ComponentButton(
+            Rect(175, ViewProperties.SCREEN_HEIGHT - 35, 80, 30),
+            'Knight'
+        )
+        self.ui_button_make_knight.add_listener_click(self.on_click_make_knight)
+
+        self.ui_buttons_make_actor.append(self.ui_button_make_warrior)
+        self.ui_buttons_make_actor.append(self.ui_button_make_rider)
+        self.ui_buttons_make_actor.append(self.ui_button_make_knight)
 
         # Tribe turn surface
         self.font = pygame.font.Font('freesansbold.ttf', 18)
@@ -303,6 +364,10 @@ class WindowMain:
 
         for button in self.ui_buttons:
             button.trigger_mouse(mouse_pos, mouse_buttons)
+        
+        if self.ui_button_make_actor_visible:
+            for button in self.ui_buttons_make_actor:
+                button.trigger_mouse(mouse_pos, mouse_buttons)
 
         # Move actor buttons
         for controller in self._controller._actor_controllers:
@@ -388,6 +453,10 @@ class WindowMain:
         # Draw UI
         for button in self.ui_buttons:
             button.draw(self.screen)
+
+        if self.ui_button_make_actor_visible:
+            for button in self.ui_buttons_make_actor:
+                button.draw(self.screen)
 
         # Show which tribe's turn it is
         if self.ui_text_tribe_turn is not self._controller.game.turn_tribe:

@@ -1,3 +1,4 @@
+import math
 import random
 from controllers.commands.CommandActorMove import CommandActorMove
 
@@ -25,11 +26,15 @@ class ControllerActorRider(IControllerActor):
     def update(self, delta_time):
         tilePos = ViewProperties.toTilePos(self.actor.position.x, self.actor.position.y)
         if self.animatedPos != tilePos:
-            self.elapsed += delta_time * (1/ViewProperties.ANIMATION_TIME)
-            self.animatedPos = self.animatedPos.lerpTo(tilePos, self.elapsed)
-        if self.elapsed > 1:
-            self.animatedPos = tilePos
-            self.elapsed = 0
+            to_destination = tilePos - self.animatedPos
+            magnitude = math.sqrt(to_destination.x**2 + to_destination.y**2)
+            anim_step = Vector2D(to_destination.x / magnitude, to_destination.y / magnitude)
+            anim_step *= ViewProperties.ANIMATION_TIME
+
+            if abs(anim_step.x) < abs(to_destination.x) and abs(anim_step.y) < abs(to_destination.y):
+                self.animatedPos += anim_step
+            else:
+                self.animatedPos = tilePos
 
     def execute_turn(self, game: Game):
         directions = [Vector2D(1,1), Vector2D(-1,-1), Vector2D(0,1), Vector2D(0,-1)]
@@ -71,7 +76,7 @@ class ControllerActorRider(IControllerActor):
                 directions.remove(direction)
         from controllers.ControllerGame import ControllerGame
         ControllerGame.instance().game.stars += 1
-    
+
     def move(self, target_tile: MapTile):
         target_pos = target_tile.position
         from controllers.ControllerGame import ControllerGame
