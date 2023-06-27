@@ -58,11 +58,6 @@ class WindowMain:
             EnumMapTile.Mountain: pygame.image.load('./resources/Tribes/Imperius/Imperius mountain.png').convert_alpha(),
         }
 
-        self.surfaces_by_actor = {
-            EnumActor.Rider: pygame.image.load('./resources/Units/Sprites/Rider.png').convert_alpha(),
-            EnumActor.Warrior: pygame.image.load('./resources/Units/Sprites/Warrior.png').convert_alpha(),
-        }
-
         # Offsets
         self.offsets_by_tile = {
             EnumMapTile.Ground: Vector2D(0, 0),
@@ -136,18 +131,9 @@ class WindowMain:
         self.make_building_buttons()
 
     def on_click_save_game(self, event: EventComponentButton):
-        # state_json = self._game.to_json(indent=4)
-        # with open('state.json', 'w') as fp:
-        #     fp.write(state_json)
-
         self._controller.save_game()
 
     def on_click_load_game(self, event: EventComponentButton):
-        # with open('state.json', 'r') as fp:
-        #     state_json = fp.read()
-        #     self._controller.game = Game.from_json(state_json)
-        #     self._game = self._controller.game
-
         self._controller.load_game()
         self._game = self._controller.game
         self.setup_game()
@@ -344,13 +330,10 @@ class WindowMain:
                 self.screen.blit(surface, dest=(x, y))
 
     def draw(self):
-        # Clear screen
         self.screen.fill((0, 0, 0))
 
         # Store current camera position
-        tempCamPos = Vector2D()
-        tempCamPos.x = self.camPosition.x
-        tempCamPos.y = self.camPosition.y
+        tempCamPos = self.camPosition.copy()
 
         # Render everything in isometric grid
         for i in range(self._game.map_size.y):
@@ -371,50 +354,7 @@ class WindowMain:
                 tileSurface = self.surfaces_by_map_tiles[tile_type]
                 self.draw_surface(tileSurface, endX, endY)
 
-            # Render buildings for row
-            # buildings = self._game.buildings
-            # for building in buildings:
-            #     building_type = building.building_type
-            #     level = building.level
-            #     tribe = building.tribe
-                
-            #     x = building.position.x * ViewProperties.TILE_WIDTH + tempCamPos.x + self.offsets_by_building[building_type].x
-            #     y = building.position.y * ViewProperties.TILE_HEIGHT + tempCamPos.y + self.offsets_by_building[building_type].y
-
-            #     if building.position.y % 2 == 1:
-            #         x += ViewProperties.TILE_WIDTH / 2
-
-            #     renderAhead = 0
-            #     if building_type == EnumBuilding.Sawmill:
-            #         renderAhead = 2
-
-            #     if building.position.y + renderAhead == i:
-            #         factory = self.resource_factories_by_tribes[tribe]
-                    
-            #         building_key = (building_type, tribe, level)
-            #         building_surface: Surface
-                    
-            #         if building_key in self.surfaces_by_building:
-            #             building_surface = self.surfaces_by_building[building_key]
-            #         else:
-            #             building_surface = factory.get_building(building_type, level)
-            #             self.surfaces_by_building[building_key] = building_surface
-
-            #         self.draw_surface(building_surface, x, y)
-
-            # Render actors for row
-            # actor_controllers = self._controller._actor_controllers
-            # for actor_controller in actor_controllers:
-            #     actor = actor_controller.actor
-            #     actor_type = actor.actor_type
-            #     x = actor_controller.animatedPos.x + tempCamPos.x + self.offsets_by_actor[actor_type].x
-            #     y = actor_controller.animatedPos.y + tempCamPos.y + self.offsets_by_actor[actor_type].y
-                
-            #     orderY = actor_controller.animatedPos.y / ViewProperties.TILE_HEIGHT
-            #     if math.ceil(orderY) == i:
-            #         actorSurface = self.surfaces_by_actor[actor_type]
-            #         self.draw_surface(actorSurface, x, y)
-
+        # Render buildings + actors
         for elem in (self._game.buildings + self._controller._actor_controllers):
             surface = None
             x = 0
@@ -431,21 +371,16 @@ class WindowMain:
                     x += ViewProperties.TILE_WIDTH / 2
 
                 factory = self.resource_factories_by_tribes[tribe]
-                    
-                building_key = (building_type, tribe, level)
-                    
-                if building_key in self.surfaces_by_building:
-                    surface = self.surfaces_by_building[building_key]
-                else:
-                    surface = factory.get_building(building_type, level)
-                    self.surfaces_by_building[building_key] = surface
+                surface = factory.get_building(building_type, level)
             elif elem in self._controller._actor_controllers:
                 actor = elem.actor
                 actor_type = actor.actor_type
+                tribe = actor.tribe
                 x = elem.animatedPos.x + tempCamPos.x + self.offsets_by_actor[actor_type].x
                 y = elem.animatedPos.y + tempCamPos.y + self.offsets_by_actor[actor_type].y
                 
-                surface = self.surfaces_by_actor[actor_type]
+                factory = self.resource_factories_by_tribes[tribe]
+                surface = factory.get_actor_surface(actor_type)
 
             if surface != None:
                 self.draw_surface(surface, x, y)

@@ -16,13 +16,16 @@ class FactoryImperius(IResourceFactory):
 
         self.surfaces_by_buildings: Dict[tuple(EnumBuilding, int), Surface] = {
             EnumBuilding.City: pygame.image.load('./resources/Tribes/Imperius/City/Imperius city 1.png'),
-            EnumBuilding.Sawmill: pygame.image.load('./resources/Buildings/Sawmill/Sawmill level 1.png'),
+            EnumBuilding.Sawmill: pygame.image.load('./resources/Buildings/Sawmill/Sawmill level 1.png')
         }
 
         self.surfaces_by_actor: Dict[EnumActor, Surface] = {
-            EnumActor.Warrior: pygame.image.load(f'resources/Tribes/Imperius/Units/warrior.png').convert_alpha(),
-            EnumActor.Rider: pygame.image.load(f'resources/Tribes/Imperius/Units/rider.png').convert_alpha(),
-            EnumActor.Knight: pygame.image.load(f'resources/Tribes/Imperius/Units/knight.png').convert_alpha(),
+            # EnumActor.Warrior: pygame.image.load(f'resources/Tribes/Imperius/Units/warrior.png').convert_alpha(),
+            # EnumActor.Rider: pygame.image.load(f'resources/Tribes/Imperius/Units/rider.png').convert_alpha(),
+            # EnumActor.Knight: pygame.image.load(f'resources/Tribes/Imperius/Units/knight.png').convert_alpha()
+            EnumActor.Warrior: pygame.image.load('./resources/Units/Sprites/Warrior.png').convert_alpha(),
+            EnumActor.Rider: pygame.image.load('./resources/Units/Sprites/Knight.png').convert_alpha(),
+            EnumActor.Knight: pygame.image.load('./resources/Units/Sprites/Rider.png').convert_alpha()
         }
 
     def get_building(self, enum_building: EnumBuilding, level: int) -> Tuple[Surface, None]:
@@ -49,17 +52,20 @@ class FactoryImperius(IResourceFactory):
 
         try:
             actor_key = enum_actor
-            if actor_key in self.surfaces_by_buildings:
-                result = self.surfaces_by_buildings[actor_key]
+            if actor_key in self.surfaces_by_actor:
+                result = self.surfaces_by_actor[actor_key]
             else:
                 if enum_actor == EnumActor.Warrior:
-                    result = pygame.image.load(f'resources/Tribes/Imperius/Units/warrior.png').convert_alpha()
+                    result = pygame.image.load('./resources/Units/Sprites/Warrior.png').convert_alpha()
+                    # result = pygame.image.load(f'resources/Tribes/Imperius/Units/warrior.png').convert_alpha()
                     self.surfaces_by_actor[actor_key] = result
                 elif enum_actor == EnumActor.Knight:
-                    result = pygame.image.load(f'resources/Tribes/Imperius/Units/knight.png').convert_alpha()
+                    result = pygame.image.load('./resources/Units/Sprites/Knight.png').convert_alpha()
+                    # result = pygame.image.load(f'resources/Tribes/Imperius/Units/knight.png').convert_alpha()
                     self.surfaces_by_actor[actor_key] = result
                 elif enum_actor == EnumActor.Rider:
-                    result = pygame.image.load(f'resources/Tribes/Imperius/Units/rider.png').convert_alpha()
+                    result = pygame.image.load('./resources/Units/Sprites/Rider.png').convert_alpha()
+                    # result = pygame.image.load(f'resources/Tribes/Imperius/Units/rider.png').convert_alpha()
                     self.surfaces_by_actor[actor_key] = result
         except Exception as exc:
             logger.exception(exc)

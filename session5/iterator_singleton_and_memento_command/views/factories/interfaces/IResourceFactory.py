@@ -1,7 +1,5 @@
-import abc
 from abc import abstractmethod, ABC
 from typing import Tuple
-import pygame
 from pygame import Surface
 from models.Actor import Actor
 

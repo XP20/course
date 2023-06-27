@@ -50,17 +50,20 @@ class FactoryHoodrick(IResourceFactory):
 
         try:
             actor_key = enum_actor
-            if actor_key in self.surfaces_by_buildings:
-                result = self.surfaces_by_buildings[actor_key]
+            if actor_key in self.surfaces_by_actor:
+                result = self.surfaces_by_actor[actor_key]
             else:
                 if enum_actor == EnumActor.Warrior:
-                    result = pygame.image.load(f'resources/Tribes/Hoodrick/Units/warrior.png').convert_alpha()
+                    result = pygame.image.load('./resources/Units/Sprites/Warrior.png').convert_alpha()
+                    # result = pygame.image.load(f'resources/Tribes/Hoodrick/Units/warrior.png').convert_alpha()
                     self.surfaces_by_actor[actor_key] = result
                 elif enum_actor == EnumActor.Knight:
-                    result = pygame.image.load(f'resources/Tribes/Hoodrick/Units/knight.png').convert_alpha()
+                    result = pygame.image.load('./resources/Units/Sprites/Knight.png').convert_alpha()
+                    # result = pygame.image.load(f'resources/Tribes/Hoodrick/Units/knight.png').convert_alpha()
                     self.surfaces_by_actor[actor_key] = result
                 elif enum_actor == EnumActor.Rider:
-                    result = pygame.image.load(f'resources/Tribes/Hoodrick/Units/rider.png').convert_alpha()
+                    result = pygame.image.load('./resources/Units/Sprites/Rider.png').convert_alpha()
+                    # result = pygame.image.load(f'resources/Tribes/Hoodrick/Units/rider.png').convert_alpha()
                     self.surfaces_by_actor[actor_key] = result
         except Exception as exc:
             logger.exception(exc)
