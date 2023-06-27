@@ -11,6 +11,7 @@ from models.Game import Game
 from models.Vector2D import Vector2D
 from models.enums.EnumMapTile import EnumMapTile
 from models.MapTile import MapTile
+from views.ViewProperties import ViewProperties
 
 import views.WindowMain as windowMain
 
@@ -31,7 +32,7 @@ class ControllerActorRider(IControllerActor):
         super().__init__(actor)
 
     def update(self, delta_time):
-        tilePos = windowMain.toTilePos(self.actor.position.x, self.actor.position.y)
+        tilePos = ViewProperties.toTilePos(self.actor.position.x, self.actor.position.y)
         if self.animatedPos != tilePos:
             self.elapsed += delta_time * (1/animationTime)
             self.animatedPos = self.animatedPos.lerpTo(tilePos, self.elapsed)

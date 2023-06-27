@@ -3,7 +3,6 @@ import time
 import math
 import pygame
 from pygame import Rect, Surface
-from typing import Dict, List
 from models.Actor import Actor
 
 from models.MapBuilding import MapBuilding
@@ -16,9 +15,8 @@ from models.enums.EnumMapTile import EnumMapTile
 from models.enums.EnumTribe import EnumTribe
 
 from controllers.ControllerGame import ControllerGame
-from controllers.interfaces.IControllerActor import IControllerActor
 from controllers.ControllerActorWarrior import ControllerActorWarrior
-from controllers.ControllerActorRider import ControllerActorRider
+from views.ViewProperties import ViewProperties
 
 from views.resources.ResourceFactoryHoodrick import ResourceFactoryHoodrick
 from views.resources.ResourceFactoryImperius import ResourceFactoryImperius
@@ -31,16 +29,6 @@ screenWidth = 520
 screenHeight = 500
 
 renderMargin = 100
-
-def toTilePos(x, y):
-    posOut = Vector2D(x, y)
-    posOut.x *= tileWidth
-    posOut.y *= tileHeight
-
-    if y % 2 == 1:
-        posOut.x += tileWidth / 2
-
-    return posOut
 
 class WindowMain:
     def __init__(self, controller: ControllerGame):
@@ -129,7 +117,7 @@ class WindowMain:
                     for column in self._game.map_tiles:
                         for tile in column:
                             if tile.tile_type == EnumMapTile.Ground:
-                                tilePos = toTilePos(tile.position.x, tile.position.y)
+                                tilePos = ViewProperties.toTilePos(tile.position.x, tile.position.y)
                                 tilePos += Vector2D(tileWidth / 2, tileHeight / 2)
 
                                 deltaX = abs(tilePos.x - pos.x)
@@ -165,14 +153,14 @@ class WindowMain:
         # Handle actor buttons
         for controller in self._controller._actor_controllers:
             if controller.actor.button != None:
-                controller.actor.button.move(toTilePos(controller.actor.position.x, controller.actor.position.y) + self.camPosition)
+                controller.actor.button.move(ViewProperties.toTilePos(controller.actor.position.x, controller.actor.position.y) + self.camPosition)
                 if controller.actor.button.trigger_mouse(mouse_pos, mouse_buttons) == 2:
                     self._controller.selected_controller = controller
 
         # Handle city buttons
         for building in self._game.buildings:
             if building.button != None and building.building_type == EnumBuilding.City:
-                building.button.move(toTilePos(building.position.x, building.position.y) + self.camPosition)
+                building.button.move(ViewProperties.toTilePos(building.position.x, building.position.y) + self.camPosition)
                 if building.button.trigger_mouse(mouse_pos, mouse_buttons) == 2:
                     pos = building.position
                     
