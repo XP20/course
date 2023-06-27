@@ -2,6 +2,6 @@ export interface DbUser {
     user_id: number;
     email: string;
     pass: string;
-    verified: number;
+    is_verified: number;
     created: Date;
 }

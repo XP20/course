@@ -1,4 +1,4 @@
 export interface TodoUpdateBody {
-    contentDirty?: string,
+    title?: string,
     completed?: number
 }

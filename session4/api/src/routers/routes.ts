@@ -6,8 +6,6 @@ import { Controller, ValidationService, FieldErrors, ValidateError, TsoaRoute, H
 import { UserController } from './../controllers/UserController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { TodosController } from './../controllers/TodosController';
-import { iocContainer } from './../ioc';
-import { IocContainer, IocContainerFactory } from '@tsoa/runtime';
 import type { RequestHandler } from 'express';
 import * as express from 'express';
 
@@ -20,7 +18,7 @@ const models: TsoaRoute.Models = {
             "user_id": {"dataType":"double","required":true},
             "email": {"dataType":"string","required":true},
             "pass": {"dataType":"string","required":true},
-            "verified": {"dataType":"double","required":true},
+            "is_verified": {"dataType":"double","required":true},
             "created": {"dataType":"datetime","required":true},
         },
         "additionalProperties": false,
@@ -31,7 +29,7 @@ const models: TsoaRoute.Models = {
         "properties": {
             "todo_id": {"dataType":"double","required":true},
             "user_id": {"dataType":"double","required":true},
-            "value": {"dataType":"string","required":true},
+            "title": {"dataType":"string","required":true},
             "completed": {"dataType":"double","required":true},
             "created": {"dataType":"datetime","required":true},
             "user": {"ref":"DbUser"},
@@ -42,7 +40,7 @@ const models: TsoaRoute.Models = {
     "TodoUpdateBody": {
         "dataType": "refObject",
         "properties": {
-            "contentDirty": {"dataType":"string"},
+            "title": {"dataType":"string"},
             "completed": {"dataType":"double"},
         },
         "additionalProperties": false,
@@ -62,7 +60,7 @@ export function RegisterRoutes(app: express.Router) {
             ...(fetchMiddlewares<RequestHandler>(UserController)),
             ...(fetchMiddlewares<RequestHandler>(UserController.prototype.VerifyEmail)),
 
-            async function UserController_VerifyEmail(request: any, response: any, next: any) {
+            function UserController_VerifyEmail(request: any, response: any, next: any) {
             const args = {
                     token: {"in":"path","name":"token","required":true,"dataType":"string"},
             };
@@ -73,12 +71,7 @@ export function RegisterRoutes(app: express.Router) {
             try {
                 validatedArgs = getValidatedArgs(args, request, response);
 
-                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
-
-                const controller: any = await container.get<UserController>(UserController);
-                if (typeof controller['setStatus'] === 'function') {
-                controller.setStatus(undefined);
-                }
+                const controller = new UserController();
 
 
               const promise = controller.VerifyEmail.apply(controller, validatedArgs as any);
@@ -92,10 +85,10 @@ export function RegisterRoutes(app: express.Router) {
             ...(fetchMiddlewares<RequestHandler>(UserController)),
             ...(fetchMiddlewares<RequestHandler>(UserController.prototype.Register)),
 
-            async function UserController_Register(request: any, response: any, next: any) {
+            function UserController_Register(request: any, response: any, next: any) {
             const args = {
-                    emailDirty: {"in":"query","name":"emailDirty","required":true,"dataType":"string"},
-                    shaPass: {"in":"query","name":"shaPass","required":true,"dataType":"string"},
+                    email: {"in":"query","name":"email","required":true,"dataType":"string"},
+                    sha_pass: {"in":"query","name":"sha_pass","required":true,"dataType":"string"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -104,12 +97,7 @@ export function RegisterRoutes(app: express.Router) {
             try {
                 validatedArgs = getValidatedArgs(args, request, response);
 
-                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
-
-                const controller: any = await container.get<UserController>(UserController);
-                if (typeof controller['setStatus'] === 'function') {
-                controller.setStatus(undefined);
-                }
+                const controller = new UserController();
 
 
               const promise = controller.Register.apply(controller, validatedArgs as any);
@@ -123,7 +111,7 @@ export function RegisterRoutes(app: express.Router) {
             ...(fetchMiddlewares<RequestHandler>(UserController)),
             ...(fetchMiddlewares<RequestHandler>(UserController.prototype.Confirmation)),
 
-            async function UserController_Confirmation(request: any, response: any, next: any) {
+            function UserController_Confirmation(request: any, response: any, next: any) {
             const args = {
                     user_id: {"in":"path","name":"user_id","required":true,"dataType":"double"},
             };
@@ -134,12 +122,7 @@ export function RegisterRoutes(app: express.Router) {
             try {
                 validatedArgs = getValidatedArgs(args, request, response);
 
-                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
-
-                const controller: any = await container.get<UserController>(UserController);
-                if (typeof controller['setStatus'] === 'function') {
-                controller.setStatus(undefined);
-                }
+                const controller = new UserController();
 
 
               const promise = controller.Confirmation.apply(controller, validatedArgs as any);
@@ -153,10 +136,10 @@ export function RegisterRoutes(app: express.Router) {
             ...(fetchMiddlewares<RequestHandler>(UserController)),
             ...(fetchMiddlewares<RequestHandler>(UserController.prototype.Login)),
 
-            async function UserController_Login(request: any, response: any, next: any) {
+            function UserController_Login(request: any, response: any, next: any) {
             const args = {
-                    emailDirty: {"in":"query","name":"emailDirty","required":true,"dataType":"string"},
-                    shaPass: {"in":"query","name":"shaPass","required":true,"dataType":"string"},
+                    email: {"in":"query","name":"email","required":true,"dataType":"string"},
+                    sha_pass: {"in":"query","name":"sha_pass","required":true,"dataType":"string"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -165,12 +148,7 @@ export function RegisterRoutes(app: express.Router) {
             try {
                 validatedArgs = getValidatedArgs(args, request, response);
 
-                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
-
-                const controller: any = await container.get<UserController>(UserController);
-                if (typeof controller['setStatus'] === 'function') {
-                controller.setStatus(undefined);
-                }
+                const controller = new UserController();
 
 
               const promise = controller.Login.apply(controller, validatedArgs as any);
@@ -184,7 +162,7 @@ export function RegisterRoutes(app: express.Router) {
             ...(fetchMiddlewares<RequestHandler>(TodosController)),
             ...(fetchMiddlewares<RequestHandler>(TodosController.prototype.TodoAdd)),
 
-            async function TodosController_TodoAdd(request: any, response: any, next: any) {
+            function TodosController_TodoAdd(request: any, response: any, next: any) {
             const args = {
                     token: {"in":"query","name":"token","required":true,"dataType":"string"},
                     content: {"in":"query","name":"content","required":true,"dataType":"string"},
@@ -196,12 +174,7 @@ export function RegisterRoutes(app: express.Router) {
             try {
                 validatedArgs = getValidatedArgs(args, request, response);
 
-                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
-
-                const controller: any = await container.get<TodosController>(TodosController);
-                if (typeof controller['setStatus'] === 'function') {
-                controller.setStatus(undefined);
-                }
+                const controller = new TodosController();
 
 
               const promise = controller.TodoAdd.apply(controller, validatedArgs as any);
@@ -215,7 +188,7 @@ export function RegisterRoutes(app: express.Router) {
             ...(fetchMiddlewares<RequestHandler>(TodosController)),
             ...(fetchMiddlewares<RequestHandler>(TodosController.prototype.TodoList)),
 
-            async function TodosController_TodoList(request: any, response: any, next: any) {
+            function TodosController_TodoList(request: any, response: any, next: any) {
             const args = {
                     token: {"in":"query","name":"token","required":true,"dataType":"string"},
             };
@@ -226,12 +199,7 @@ export function RegisterRoutes(app: express.Router) {
             try {
                 validatedArgs = getValidatedArgs(args, request, response);
 
-                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
-
-                const controller: any = await container.get<TodosController>(TodosController);
-                if (typeof controller['setStatus'] === 'function') {
-                controller.setStatus(undefined);
-                }
+                const controller = new TodosController();
 
 
               const promise = controller.TodoList.apply(controller, validatedArgs as any);
@@ -245,10 +213,10 @@ export function RegisterRoutes(app: express.Router) {
             ...(fetchMiddlewares<RequestHandler>(TodosController)),
             ...(fetchMiddlewares<RequestHandler>(TodosController.prototype.TodoRemove)),
 
-            async function TodosController_TodoRemove(request: any, response: any, next: any) {
+            function TodosController_TodoRemove(request: any, response: any, next: any) {
             const args = {
                     token: {"in":"query","name":"token","required":true,"dataType":"string"},
-                    todo_id: {"in":"query","name":"todo_id","required":true,"dataType":"string"},
+                    todo_id: {"in":"query","name":"todo_id","required":true,"dataType":"double"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -257,12 +225,7 @@ export function RegisterRoutes(app: express.Router) {
             try {
                 validatedArgs = getValidatedArgs(args, request, response);
 
-                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
-
-                const controller: any = await container.get<TodosController>(TodosController);
-                if (typeof controller['setStatus'] === 'function') {
-                controller.setStatus(undefined);
-                }
+                const controller = new TodosController();
 
 
               const promise = controller.TodoRemove.apply(controller, validatedArgs as any);
@@ -276,11 +239,11 @@ export function RegisterRoutes(app: express.Router) {
             ...(fetchMiddlewares<RequestHandler>(TodosController)),
             ...(fetchMiddlewares<RequestHandler>(TodosController.prototype.TodoUpdate)),
 
-            async function TodosController_TodoUpdate(request: any, response: any, next: any) {
+            function TodosController_TodoUpdate(request: any, response: any, next: any) {
             const args = {
                     token: {"in":"query","name":"token","required":true,"dataType":"string"},
                     todo_id: {"in":"query","name":"todo_id","required":true,"dataType":"any"},
-                    todoBody: {"in":"body","name":"todoBody","required":true,"ref":"TodoUpdateBody"},
+                    todo_body: {"in":"body","name":"todo_body","required":true,"ref":"TodoUpdateBody"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -289,12 +252,7 @@ export function RegisterRoutes(app: express.Router) {
             try {
                 validatedArgs = getValidatedArgs(args, request, response);
 
-                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
-
-                const controller: any = await container.get<TodosController>(TodosController);
-                if (typeof controller['setStatus'] === 'function') {
-                controller.setStatus(undefined);
-                }
+                const controller = new TodosController();
 
 
               const promise = controller.TodoUpdate.apply(controller, validatedArgs as any);

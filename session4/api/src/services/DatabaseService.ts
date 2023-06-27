@@ -1,4 +1,3 @@
-import {singleton} from 'tsyringe';
 import {DataSource} from "typeorm";
 
 import {DbVerification} from "../models/DbVerification";
@@ -6,12 +5,9 @@ import {DbUser} from "../models/DbUser";
 import {DbSession} from "../models/DbSession";
 import {DbTodo} from "../models/DbTodo";
 
-// import * as sha1 from 'js-sha1'; // not working here: 'TypeError: sha1 is not a function'
-import nodemailer from "nodemailer";
+//import * as sha1 from 'js-sha1'; // not working here: 'TypeError: sha1 is not a function'
 import {v4 as uuidv4} from 'uuid';
-import { TodoUpdateBody } from '../models/TodoUpdateBody';
 
-@singleton()
 export class DatabaseService {
     constructor() {
         this.dataSource = new DataSource({
@@ -21,324 +17,228 @@ export class DatabaseService {
             synchronize: false,
             entities: []
         });
-
-        this.transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true,
-            auth: {
-                user: 'source@gmail.com',
-                pass: 'passphrase'
-            }
-        });
     }
 
     //datasource
     private dataSource: DataSource;
-    private transporter;
 
     public async connect(): Promise<void> {
         await this.dataSource.initialize();
     }
 
-    public async VerifyEmail(tokenDirty: string): Promise<{success: boolean}> {
-        let success = false;
-
-        let token = tokenDirty.trim();
-        
-        // Check if token is valid
-        let tokenSql = 'SELECT * FROM verifications WHERE token = ? AND is_valid = 1 LIMIT 1;';
-        let rows = await this.dataSource.query(tokenSql, [token]);
-    
-        if (rows.length > 0) {
-            success = true;
-            
-            let verification: DbVerification = {
-                user_id: rows[0].user_id,
-                verification_id: rows[0].verification_id,
-                token: rows[0].token,
-                is_valid: rows[0].is_valid,
-                created: rows[0].created
-            };
-    
-            // Update user to be verified
-            let user_id = verification.user_id;
-            let udpateSql = 'UPDATE users SET verified = 1 WHERE user_id = ?';
-            await this.dataSource.query(udpateSql, [user_id]);
-            
-            // Delete verification entry
-            let verification_id = verification.verification_id;
-            let deleteSql = 'DELETE FROM verifications WHERE verification_id = ?';
-            await this.dataSource.query(deleteSql, [verification_id]);
-        }
-    
-        return {success: success};
-    }
-
-    public async Register(emailDirty: string, shaPass: string): Promise<{success: boolean}> {
-        let success = false;
-        
-        let email = emailDirty.trim();
-        let pass = shaPass.trim();
-
-        // Making the user entry
-        let userSql = 'INSERT INTO users(email, pass) VALUES(?, ?)';
-        await this.dataSource.query(userSql, [email, pass]);
-
-        // Getting user id
-        let userIdSql = 'SELECT user_id FROM users WHERE email = ?';
-        let rows = await this.dataSource.query(userIdSql, [email]);
-        if (rows.length > 0) {
-            let user_id = rows[0].user_id;
-
-            // Making the verification entry
-            let token = uuidv4();
-            let verifySql = 'INSERT INTO verifications(user_id, token) VALUES (?, ?)';
-            await this.dataSource.query(verifySql, [user_id, token])
-    
-            // SMTP Sending the verification email
-            let html = `<div><h>Test Html Header</h><p>Go to this link to verify: http://127.0.0.1:8000/user/verify/${token}</p></div>`;
-    
-            let result = await this.transporter.sendMail({
-                from: 'source@gmail.com',
-                to: email,
-                subject: 'Test email',
-                html: html,
-            });
-
-            success = true;
-        }        
-
-        return {success: success};
-    }
-
-    public async Confirmation(user_id: number): Promise<{success: boolean, verified: number}> {
-        let response = {
-            success: false,
-            verified: 0
+    public async getUserByEmailAndPass(email: string, sha_pass: string): Promise<DbUser> {
+        let user: DbUser = {
+            user_id: null,
+            email: null,
+            pass: null,
+            is_verified: null,
+            created: null,
         };
 
-        // Getting user by user_id
-        let userIdSql = 'SELECT * FROM users WHERE user_id = ? LIMIT 1';
-        let rows = await this.dataSource.manager.query(userIdSql, [user_id]);
-        
-        if (rows.length > 0) {
-            let user: DbUser = {
-                user_id: rows[0].user_id,
-                email: rows[0].email,
-                pass: rows[0].pass,
-                verified: rows[0].verified,
-                created: rows[0].created
-            };
+        let user_sql = 'SELECT * FROM users WHERE email = :email AND pass = :pass LIMIT 1';
+        let values = {email: email, pass: sha_pass};
+        let rows = await this.dataSource.manager.query(user_sql, values as any);
 
-            response.success = true;
-            response.verified = user.verified;
+        if (rows.length > 0) {
+            let row = rows[0];
+            user.user_id = row.user_id;
+            user.email = row.email;
+            user.pass = row.pass;
+            user.is_verified = row.is_verified;
+            user.created = row.created;
         }
 
-        return response;
+        return user;
     }
 
-    public async Login(emailDirty: string, shaPass: string): Promise<{success: boolean, token: string}> {
-        let response = {
-            success: false,
-            token: ''
+    public async getUserByUserId(user_id: number): Promise<DbUser> {
+        let user: DbUser = {
+            user_id: null,
+            email: null,
+            pass: null,
+            is_verified: null,
+            created: null,
         };
 
-        let email = emailDirty.trim();
-        let pass = shaPass.trim();
-
-        // Getting user_id
-        let userSql = 'SELECT * FROM users WHERE email = ? AND pass = ? LIMIT 1';
-        let rows = await this.dataSource.manager.query(userSql, [email, pass]);
+        let user_sql = 'SELECT * FROM users WHERE user_id = :user_id LIMIT 1';
+        let values = {user_id: user_id};
+        let rows = await this.dataSource.manager.query(user_sql, values as any);
 
         if (rows.length > 0) {
-            let user: DbUser = {
-                user_id: rows[0].user_id,
-                email: rows[0].email,
-                pass: rows[0].pass,
-                verified: rows[0].verified,
-                created: rows[0].created,
-            };
-            
-            // Creating a session
-            let token = uuidv4();
-            let sessionSql = 'INSERT INTO sessions(user_id, token) VALUES (?, ?)';
-            await this.dataSource.manager.query(sessionSql, [user.user_id, token]);
-
-            // Get the created session
-            let getSessionSql = 'SELECT * FROM sessions WHERE token = ? LIMIT 1';
-            let sessionRows = await this.dataSource.manager.query(getSessionSql, [token]);
-
-            if (sessionRows.length > 0) {
-                let session: DbSession = {
-                    session_id: sessionRows[0].session_id,
-                    user_id: sessionRows[0].user_id,
-                    token: sessionRows[0].token,
-                    is_valid: sessionRows[0].is_valid,
-                    created: sessionRows[0].created
-                };
-
-                response.success = true   
-                response.token = session.token;
-            }
+            let row = rows[0];
+            user.user_id = row.user_id;
+            user.email = row.email;
+            user.pass = row.pass;
+            user.is_verified = row.is_verified;
+            user.created = row.created;
         }
 
-        return response;
+        return user;
     }
+
+    public async getUserIdByEmail(email: string): Promise<number> {
+        let user_id = null;
+
+        let user_id_sql = 'SELECT user_id FROM users WHERE email = :email';
+        let values = {email: email};
+        let rows = await this.dataSource.query(user_id_sql, values as any);
+        if (rows.length > 0) {
+            let row = rows[0];
+            user_id = row.user_id;
+        }
+
+        return user_id;
+    }
+
+    public async getVerificationByToken(token: string): Promise<DbVerification> {
+        let verification: DbVerification = {
+            user_id: null,
+            verification_id: null,
+            token: null,
+            is_valid: null,
+            created: null
+        };
+
+        let token_sql = 'SELECT * FROM verifications WHERE token = :token AND is_valid = 1 LIMIT 1;';
+        let values = {token};
+        let rows = await this.dataSource.query(token_sql, values as any);
     
-    public async TodoAdd(tokenDirty: string, contentDirty: string): Promise<{success: boolean}> {
-        let success = false;
-
-        let token = tokenDirty.trim();
-
-        let tokenSql = 'SELECT * FROM sessions WHERE token = ? LIMIT 1';
-        let rows = await this.dataSource.manager.query(tokenSql, [token]);
-
         if (rows.length > 0) {
-            let session: DbSession = {
-                session_id: rows[0].session_id,
-                user_id: rows[0].user_id,
-                token: rows[0].token,
-                is_valid: rows[0].is_valid,
-                created: rows[0].created
-            };
-
-            let user_id = session.user_id;
-
-            let content = contentDirty.trim();
-            
-            let todoSql = 'INSERT INTO todo(user_id, value) VALUES (? ,?)';
-            await this.dataSource.manager.query(todoSql, [user_id, content]);
-
-            success = true;
+            let row = rows[0];
+            verification.user_id = row.user_id;
+            verification.verification_id = row.verification_id;
+            verification.token = row.token;
+            verification.is_valid = row.is_valid;
+            verification.created = row.created;
         }
 
-        return {success: success};
+        return verification;
     }
 
-    public async TodoList(tokenDirty: string): Promise<{success: boolean, todos: DbTodo[]}> {
-        let success = false;
+    public async registerUser(email: string, sha_pass: string): Promise<void> {
+        let user_sql = 'INSERT INTO users(email, pass) VALUES(:email, :pass)';
+        let values = {email: email, pass: sha_pass};
+        await this.dataSource.manager.query(user_sql, values as any);
+    }
+
+    public async verifyUser(user_id: number): Promise<void> {
+        let update_sql = 'UPDATE users SET verified = 1 WHERE user_id = :user_id';
+        let values = {user_id: user_id}
+        await this.dataSource.query(update_sql, values as any);
+    }
+
+    public async deleteVerification(verification_id: number): Promise<void> {
+        let delete_sql = 'DELETE FROM verifications WHERE verification_id = :verification_id';
+        let values = {verification_id: verification_id}
+        await this.dataSource.query(delete_sql, values as any);
+    }
+
+    public async makeVerification(user_id: number): Promise<string> {
+        let token = uuidv4();
+        let make_verification_sql = 'INSERT INTO verifications(user_id, token) VALUES (:user_id, :token)';
+        let values = {user_id: user_id, token: token};
+        await this.dataSource.query(make_verification_sql, values as any);
+
+        return token;
+    }
+
+    public async makeSession(user_id: number): Promise<string> {
+        let token = uuidv4();
+        let session_sql = 'INSERT INTO sessions(user_id, token) VALUES (:user_id, :token)';
+        let values = {user_id: user_id, token: token}
+        await this.dataSource.manager.query(session_sql, values as any);
+
+        return token;
+    }
+
+    public async getSessionByToken(token: string): Promise<DbSession> {
+        let session: DbSession = {
+            session_id: null,
+            user_id: null,
+            token: null,
+            is_valid: null,
+            created: null
+        };
+        
+        let get_session_sql = 'SELECT * FROM sessions WHERE token = :token LIMIT 1';
+        let values = {token: token};
+        let session_rows = await this.dataSource.manager.query(get_session_sql, values as any);
+
+        if (session_rows.length > 0) {
+            let session_row = session_rows[0];
+            session.session_id = session_row.session_id;
+            session.user_id = session_row.user_id;
+            session.token = session_row.token;
+            session.is_valid = session_row.is_valid;
+            session.created = session_row.created;
+        }
+
+        return session;
+    }
+
+    public async makeTodo(user_id: number, title: string): Promise<void> {
+        let todo_sql = 'INSERT INTO todo(user_id, title) VALUES (:user_id, :title)';
+        let values = {user_id: user_id, title: title};
+        await this.dataSource.manager.query(todo_sql, values as any);
+    }
+
+    public async getTodoByUserId(user_id: number): Promise<DbTodo[]> {
         let todos: DbTodo[] = [];
 
-        let token = tokenDirty.trim();
+        let todo_sql = 'SELECT * FROM todo WHERE user_id = :user_id';
+        let values = {user_id: user_id}
+        let todo_rows = await this.dataSource.manager.query(todo_sql, values as any);
 
-        let tokenSql = 'SELECT * FROM sessions WHERE token = ? LIMIT 1';
-        let rows = await this.dataSource.manager.query(tokenSql, [token]);
-
-        if (rows.length > 0) {
-            let session: DbSession = {
-                session_id: rows[0].session_id,
-                user_id: rows[0].user_id,
-                token: rows[0].token,
-                is_valid: rows[0].is_valid,
-                created: rows[0].created
+        for (let i = 0; i < todo_rows.length; i++) {
+            let todo_row = todo_rows[0];
+            let todo: DbTodo = {
+                todo_id: todo_row.todo_id,
+                user_id: todo_row.user_id,
+                title: todo_row.title,
+                completed: todo_row.completed,
+                created: todo_row.created
             };
 
-            let user_id = session.user_id;
-            
-            let todoSql = 'SELECT * FROM todo WHERE user_id = ?';
-            let todoRows = await this.dataSource.manager.query(todoSql, [user_id]);
-
-            for (let i = 0; i < todoRows.length; i++) {
-                let todo: DbTodo = {
-                    todo_id: todoRows[0].todo_id,
-                    user_id: todoRows[0].user_id,
-                    value: todoRows[0].value,
-                    completed: todoRows[0].completed,
-                    created: todoRows[0].created
-                };
-
-                todos.push(todo);
-            }
-
-            success = true;
+            todos.push(todo);
         }
 
-        return {success: success, todos: todos};
+        return todos;
     }
 
-    public async TodoRemove(tokenDirty: string, todo_idDirty: string): Promise<{success: boolean}> {
-        let success = false;
+    public async getTodoByTodoId(todo_id: number): Promise<DbTodo> {
+        let todo: DbTodo = {
+            todo_id: null,
+            user_id: null,
+            title: null,
+            created: null,
+            completed: null
+        };
 
-        let token = tokenDirty.trim();
+        let todo_sql = 'SELECT * FROM todo WHERE todo_id = :todo_id';
+        let values = {todo_id: todo_id};
+        let todo_rows = await this.dataSource.manager.query(todo_sql, values as any);
 
-        let tokenSql = 'SELECT * FROM sessions WHERE token = ? LIMIT 1';
-        let rows = await this.dataSource.manager.query(tokenSql, [token]);
-
-        if (rows.length > 0) {
-            let session: DbSession = {
-                session_id: rows[0].session_id,
-                user_id: rows[0].user_id,
-                token: rows[0].token,
-                is_valid: rows[0].is_valid,
-                created: rows[0].created
-            };
-
-            let todo_idString = todo_idDirty.trim();
-            let todo_id = parseInt(todo_idString);
-
-            let user_id = session.user_id;
-            
-            let todoSql = 'DELETE FROM todo WHERE user_id = ? AND todo_id = ?';
-            await this.dataSource.manager.query(todoSql, [user_id, todo_id]);
-
-            success = true;
+        if (todo_rows.length > 0) {
+            let todo_row = todo_rows[0];
+            todo.todo_id = todo_row.todo_id;
+            todo.user_id = todo_row.user_id;
+            todo.completed = todo_row.completed;
+            todo.created = todo_row.created;
+            todo.title = todo_row.title;
         }
 
-        return {success: success};
+        return todo;
     }
 
-    public async TodoUpdate(tokenDirty: string, todo_id: number, newValues: TodoUpdateBody): Promise<{success: boolean}> {
-        let success = false;
+    public async deleteTodoByTodoId(todo_id: number): Promise<void> {
+        let todo_sql = 'DELETE FROM todo WHERE todo_id = :todo_id';
+        let values = {todo_id: todo_id};
+        await this.dataSource.manager.query(todo_sql, values as any);
+    }
 
-        let token = tokenDirty.trim();
-
-        let tokenSql = 'SELECT * FROM sessions WHERE token = ? LIMIT 1';
-        let rows = await this.dataSource.manager.query(tokenSql, [token]);
-
-        if (rows.length > 0) {
-            let session: DbSession = {
-                session_id: rows[0].session_id,
-                user_id: rows[0].user_id,
-                token: rows[0].token,
-                is_valid: rows[0].is_valid,
-                created: rows[0].created
-            };
-
-            let user_id = session.user_id;
-            
-            let todoSql = 'SELECT * FROM todo WHERE todo_id = ? AND user_id = ? LIMIT 1';
-            let todoRows = await this.dataSource.manager.query(todoSql, [todo_id, user_id]);
-
-            if (todoRows.length > 0) {
-                let todo: DbTodo = {
-                    todo_id: todoRows[0].todo_id,
-                    user_id: todoRows[0].user_id,
-                    value: todoRows[0].value,
-                    completed: todoRows[0].completed,
-                    created: todoRows[0].created
-                };
-
-                if (newValues.contentDirty != null) {
-                    let content = newValues.contentDirty.trim();
-
-                    todo.value = content;
-                }
-
-                if (newValues.completed != null) {
-                    let completed = newValues.completed;
-
-                    todo.completed = completed;
-                }
-
-                let updateSql = 'UPDATE todo SET value = ?, completed = ? WHERE user_id = ? AND todo_id = ?';
-                let updateArgs = [todo.value, todo.completed, user_id, todo_id];
-                await this.dataSource.manager.query(updateSql, updateArgs);
-
-                success = true;
-            }
-        }
-
-        return {success: success};
+    public async updateTodo(todo_id: number, title: string, completed: number): Promise<void> {
+        let update_sql = 'UPDATE todo SET title = :title, completed = :completed WHERE todo_id = :todo_id';
+        let values = {title: title, completed: completed, todo_id: todo_id};
+        await this.dataSource.manager.query(update_sql, values as any);
     }
 }

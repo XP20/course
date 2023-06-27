@@ -9,7 +9,6 @@
     "basePath": "/",
     "entryFile": "./app.ts",
     "routesDir": "./src/routers",
-    "iocModule": "./src/ioc",
     "controllerPathGlobs": [
       "./src/controllers/**/*.ts"
     ]

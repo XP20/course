@@ -1,47 +1,85 @@
-import {Body, Controller, Post, Get, Route, Query, Path} from "tsoa";
-import {container} from 'tsyringe';
-import {DataSource} from "typeorm";
-
-import {DbVerification} from "../models/DbVerification";
-import {DbUser} from "../models/DbUser";
-import {DbSession} from "../models/DbSession";
+import {Body, Post, Route, Query} from "tsoa";
 import {DbTodo} from "../models/DbTodo";
 
 // import * as sha1 from 'js-sha1'; // not working here: 'TypeError: sha1 is not a function'
-import nodemailer from "nodemailer";
-import {v4 as uuidv4} from 'uuid';
 import {DatabaseService} from "../services/DatabaseService";
-import { TodoUpdateBody } from "../models/TodoUpdateBody";
+import {TodoUpdateBody} from "../models/TodoUpdateBody";
 
 @Route("todos")
 export class TodosController {
-    private db: DatabaseService = container.resolve(DatabaseService);
-
-    constructor() {
-        this.db = container.resolve(DatabaseService);
-    }
-
     @Post('add')
-    public async TodoAdd(@Query() token: string, @Query() content: string): Promise<{success: boolean}> {
-        let result = await this.db.TodoAdd(token, content);
+    public async TodoAdd(@Query() token: string, @Query() content: string): Promise<boolean> {
+        let result = false;
+
+        try {
+            const conn = new DatabaseService;
+            await conn.connect();
+            let session = await conn.getSessionByToken(token);
+            await conn.makeTodo(session.user_id, content);
+        
+            result = true;
+        } catch(exc) {
+            console.error(exc);
+        }
+
         return result;
     }
 
     @Post('list')
-    public async TodoList(@Query() token: string): Promise<{success: boolean, todos: DbTodo[]}> {
-        let result = await this.db.TodoList(token);
-        return result;
+    public async TodoList(@Query() token: string): Promise<DbTodo[]> {
+        let todos: DbTodo[] = [];
+
+        try {
+            const conn = new DatabaseService;
+            await conn.connect();
+            let session = await conn.getSessionByToken(token);
+            todos = await conn.getTodoByUserId(session.user_id);
+        } catch(exc) {
+            console.error(exc);
+        }
+
+        return todos;
     }
 
     @Post('remove')
-    public async TodoRemove(@Query() token: string, @Query() todo_id: string): Promise<{success: boolean}> {
-        let result = await this.db.TodoRemove(token, todo_id);
+    public async TodoRemove(@Query() token: string, @Query() todo_id: number): Promise<boolean> {
+        let result = false;
+
+        try {
+            const conn = new DatabaseService;
+            await conn.connect();
+            let session = await conn.getSessionByToken(token);
+            let todo = await conn.getTodoByTodoId(todo_id);
+            if (todo.user_id == session.user_id) {
+                await conn.deleteTodoByTodoId(todo_id);
+                result = true;
+            }
+        } catch(exc) {
+            console.error(exc);
+        }
+
         return result;
     }
 
     @Post('update')
-    public async TodoUpdate(@Query() token: string, @Query() todo_id, @Body() todoBody: TodoUpdateBody): Promise<{success: boolean}> {
-        let result = await this.db.TodoUpdate(token, todo_id, todoBody);
+    public async TodoUpdate(@Query() token: string, @Query() todo_id, @Body() todo_body: TodoUpdateBody): Promise<boolean> {
+        let result = false;
+
+        try {
+            const conn = new DatabaseService;
+            await conn.connect();
+            let session = await conn.getSessionByToken(token);
+            let todo = await conn.getTodoByTodoId(todo_id);
+            if (todo.user_id == session.user_id) {
+                let title = todo_body.title;
+                let completed = todo_body.completed;
+                await conn.updateTodo(todo_id, title, completed);
+                result = true;
+            }
+        } catch(exc) {
+            console.error(exc);
+        }
+
         return result;
     }
 }
