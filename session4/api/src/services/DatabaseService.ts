@@ -35,8 +35,8 @@ export class DatabaseService {
             created: null,
         };
 
-        let user_sql = 'SELECT * FROM users WHERE email = :email AND pass = :pass LIMIT 1';
-        let values = {email: email, pass: sha_pass};
+        let user_sql = 'SELECT * FROM users WHERE email = ? AND pass = ? LIMIT 1';
+        let values = [email, sha_pass];
         let rows = await this.dataSource.manager.query(user_sql, values as any);
 
         if (rows.length > 0) {
@@ -60,8 +60,8 @@ export class DatabaseService {
             created: null,
         };
 
-        let user_sql = 'SELECT * FROM users WHERE user_id = :user_id LIMIT 1';
-        let values = {user_id: user_id};
+        let user_sql = 'SELECT * FROM users WHERE user_id = ? LIMIT 1';
+        let values = [user_id];
         let rows = await this.dataSource.manager.query(user_sql, values as any);
 
         if (rows.length > 0) {
@@ -79,8 +79,8 @@ export class DatabaseService {
     public async getUserIdByEmail(email: string): Promise<number> {
         let user_id = null;
 
-        let user_id_sql = 'SELECT user_id FROM users WHERE email = :email';
-        let values = {email: email};
+        let user_id_sql = 'SELECT user_id FROM users WHERE email = ?';
+        let values = [email];
         let rows = await this.dataSource.query(user_id_sql, values as any);
         if (rows.length > 0) {
             let row = rows[0];
@@ -99,8 +99,8 @@ export class DatabaseService {
             created: null
         };
 
-        let token_sql = 'SELECT * FROM verifications WHERE token = :token AND is_valid = 1 LIMIT 1;';
-        let values = {token};
+        let token_sql = 'SELECT * FROM verifications WHERE token = ? AND is_valid = 1 LIMIT 1;';
+        let values = [token];
         let rows = await this.dataSource.query(token_sql, values as any);
     
         if (rows.length > 0) {
@@ -116,14 +116,14 @@ export class DatabaseService {
     }
 
     public async registerUser(email: string, sha_pass: string): Promise<void> {
-        let user_sql = 'INSERT INTO users(email, pass) VALUES(:email, :pass)';
-        let values = {email: email, pass: sha_pass};
+        let user_sql = 'INSERT INTO users(email, pass) VALUES(?, ?)';
+        let values = [email, sha_pass];
         await this.dataSource.manager.query(user_sql, values as any);
     }
 
     public async verifyUser(user_id: number): Promise<void> {
-        let update_sql = 'UPDATE users SET verified = 1 WHERE user_id = :user_id';
-        let values = {user_id: user_id}
+        let update_sql = 'UPDATE users SET verified = 1 WHERE user_id = ?';
+        let values = [user_id];
         await this.dataSource.query(update_sql, values as any);
     }
 
@@ -135,8 +135,8 @@ export class DatabaseService {
 
     public async makeVerification(user_id: number): Promise<string> {
         let token = uuidv4();
-        let make_verification_sql = 'INSERT INTO verifications(user_id, token) VALUES (:user_id, :token)';
-        let values = {user_id: user_id, token: token};
+        let make_verification_sql = 'INSERT INTO verifications(user_id, token) VALUES (?, ?)';
+        let values = [user_id, token];
         await this.dataSource.query(make_verification_sql, values as any);
 
         return token;
@@ -144,8 +144,8 @@ export class DatabaseService {
 
     public async makeSession(user_id: number): Promise<string> {
         let token = uuidv4();
-        let session_sql = 'INSERT INTO sessions(user_id, token) VALUES (:user_id, :token)';
-        let values = {user_id: user_id, token: token}
+        let session_sql = 'INSERT INTO sessions(user_id, token) VALUES (?, ?)';
+        let values = [user_id, token];
         await this.dataSource.manager.query(session_sql, values as any);
 
         return token;
@@ -160,8 +160,8 @@ export class DatabaseService {
             created: null
         };
         
-        let get_session_sql = 'SELECT * FROM sessions WHERE token = :token LIMIT 1';
-        let values = {token: token};
+        let get_session_sql = 'SELECT * FROM sessions WHERE token = ? LIMIT 1';
+        let values = [token];
         let session_rows = await this.dataSource.manager.query(get_session_sql, values as any);
 
         if (session_rows.length > 0) {
@@ -177,20 +177,20 @@ export class DatabaseService {
     }
 
     public async makeTodo(user_id: number, title: string): Promise<void> {
-        let todo_sql = 'INSERT INTO todo(user_id, title) VALUES (:user_id, :title)';
-        let values = {user_id: user_id, title: title};
+        let todo_sql = 'INSERT INTO todo(user_id, title) VALUES (?, ?)';
+        let values = [user_id, title];
         await this.dataSource.manager.query(todo_sql, values as any);
     }
 
     public async getTodoByUserId(user_id: number): Promise<DbTodo[]> {
         let todos: DbTodo[] = [];
 
-        let todo_sql = 'SELECT * FROM todo WHERE user_id = :user_id';
-        let values = {user_id: user_id}
+        let todo_sql = 'SELECT * FROM todo WHERE user_id = ?';
+        let values = [user_id];
         let todo_rows = await this.dataSource.manager.query(todo_sql, values as any);
 
         for (let i = 0; i < todo_rows.length; i++) {
-            let todo_row = todo_rows[0];
+            let todo_row = todo_rows[i];
             let todo: DbTodo = {
                 todo_id: todo_row.todo_id,
                 user_id: todo_row.user_id,
@@ -214,8 +214,8 @@ export class DatabaseService {
             completed: null
         };
 
-        let todo_sql = 'SELECT * FROM todo WHERE todo_id = :todo_id';
-        let values = {todo_id: todo_id};
+        let todo_sql = 'SELECT * FROM todo WHERE todo_id = ?';
+        let values = [todo_id];
         let todo_rows = await this.dataSource.manager.query(todo_sql, values as any);
 
         if (todo_rows.length > 0) {
@@ -231,14 +231,14 @@ export class DatabaseService {
     }
 
     public async deleteTodoByTodoId(todo_id: number): Promise<void> {
-        let todo_sql = 'DELETE FROM todo WHERE todo_id = :todo_id';
-        let values = {todo_id: todo_id};
+        let todo_sql = 'DELETE FROM todo WHERE todo_id = ?';
+        let values = [todo_id];
         await this.dataSource.manager.query(todo_sql, values as any);
     }
 
     public async updateTodo(todo_id: number, title: string, completed: number): Promise<void> {
-        let update_sql = 'UPDATE todo SET title = :title, completed = :completed WHERE todo_id = :todo_id';
-        let values = {title: title, completed: completed, todo_id: todo_id};
+        let update_sql = 'UPDATE todo SET title = ?, completed = ? WHERE todo_id = ?';
+        let values = [title, completed, todo_id];
         await this.dataSource.manager.query(update_sql, values as any);
     }
 }
