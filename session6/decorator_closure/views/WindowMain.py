@@ -3,11 +3,11 @@ import uuid
 from typing import Dict, List
 import pygame
 from pygame import SRCALPHA, Rect, Surface
-from controllers.ControllerActorRider import ControllerActorRider
-from controllers.ControllerActorWarrior import ControllerActorWarrior
-from controllers.ControllerActorKnight import ControllerActorKnight
 from controllers.commands.CommandActorCreate import CommandActorCreate
-from models.Game import Game
+from controllers.decorators.DecoratorAlignedButton import DecoratorAlignedButton
+from controllers.decorators.DecoratorColorButton import DecoratorColorButton
+from controllers.decorators.DecoratorInvisibleButton import DecoratorInvisibleButton
+from controllers.decorators.DecoratorUnclickableButton import DecoratorUnclickableButton
 
 from models.Vector2D import Vector2D
 
@@ -17,6 +17,8 @@ from models.enums.EnumMapTile import EnumMapTile
 from models.enums.EnumTribe import EnumTribe
 
 from controllers.ControllerGame import ControllerGame
+from utils.decorators.decorator_speed import decorator_speed
+from utils.decorators.decorator_try_catch import decorator_try_catch
 from views.ViewProperties import ViewProperties
 from views.components.EventComponentButton import EventComponentButton
 
@@ -91,6 +93,7 @@ class WindowMain:
         self._game = self._controller.new_game()
         self.make_building_buttons()
 
+    @decorator_try_catch
     def make_building_buttons(self):
         for building in self._game.buildings:
             building_uuid = str(building.uuid)
@@ -100,6 +103,7 @@ class WindowMain:
                 button.add_listener_click(self.on_click_building)
                 self.building_buttons[building_uuid] = button
 
+    @decorator_try_catch
     def make_actor_buttons(self):
         self.actor_buttons.clear()
         for actor_cont in self._controller._actor_controllers:
@@ -109,31 +113,38 @@ class WindowMain:
             button = ComponentButton(
                 pygame.Rect(0, 0, ViewProperties.TILE_WIDTH, ViewProperties.TILE_HEIGHT), '', actor_cont)
             button.add_listener_click(self.on_click_actor_cont)
+            button = DecoratorInvisibleButton(button)
             self.actor_buttons[actor_uuid] = button
 
+    @decorator_try_catch
     def on_click_actor_cont(self, event: EventComponentButton):
         actor_cont = event.linked_object
         if actor_cont:
             self._controller.selected_controller = actor_cont
 
+    @decorator_try_catch
     def on_click_building(self, event: EventComponentButton):
         self.ui_button_make_actor_visible = True
         building = event.linked_object
         for button in self.ui_buttons_make_actor:
-            button.linked_object = building
+            button.set_linked_object(building)
 
+    @decorator_try_catch
     def on_click_new_game(self, event: EventComponentButton):
         self._game = self._controller.new_game()
         self.make_building_buttons()
 
+    @decorator_try_catch
     def on_click_save_game(self, event: EventComponentButton):
         self._controller.save_game()
 
+    @decorator_try_catch
     def on_click_load_game(self, event: EventComponentButton):
         self._controller.load_game()
         self._game = self._controller.game
         self.setup_game()
         
+    @decorator_try_catch
     def setup_game(self):
         # Remake actor controllers
         self._controller.setup_game()
@@ -145,12 +156,15 @@ class WindowMain:
         self.building_buttons.clear()
         self.make_building_buttons()
 
+    @decorator_try_catch
     def on_click_undo_move(self, event: EventComponentButton):
         self._controller.undo_command()
 
+    @decorator_try_catch
     def on_click_redo_move(self, event: EventComponentButton):
         self._controller.redo_command()
 
+    @decorator_try_catch
     def on_click_make_warrior(self, event: EventComponentButton):
         self.ui_button_make_actor_visible = False
         building = event.linked_object
@@ -163,6 +177,7 @@ class WindowMain:
             self._controller.execute_command(command)
             self.make_actor_buttons()
 
+    @decorator_try_catch
     def on_click_make_rider(self, event: EventComponentButton):
         self.ui_button_make_actor_visible = False
         building = event.linked_object
@@ -175,6 +190,7 @@ class WindowMain:
             self._controller.execute_command(command)
             self.make_actor_buttons()
 
+    @decorator_try_catch
     def on_click_make_knight(self, event: EventComponentButton):
         self.ui_button_make_actor_visible = False
         building = event.linked_object
@@ -187,7 +203,7 @@ class WindowMain:
             self._controller.execute_command(command)
             self.make_actor_buttons()
 
-
+    @decorator_try_catch
     def on_key_press(self, key):
         if key == keyboard.Key.right:
             WindowMain.instance().camPosition.x -= ViewProperties.CAM_SPEED
@@ -216,6 +232,8 @@ class WindowMain:
             Rect(ViewProperties.SCREEN_WIDTH - 120, 5, 115, 35),
             'New Game'
         )
+        self.ui_button_new_game = DecoratorAlignedButton(self.ui_button_new_game, right=True, top=True)
+        self.ui_button_new_game = DecoratorColorButton(self.ui_button_new_game, border=(255,0,0))
         self.ui_button_new_game.add_listener_click(self.on_click_new_game)
 
         # Save game button
@@ -223,6 +241,7 @@ class WindowMain:
             Rect(ViewProperties.SCREEN_WIDTH - 120, 43, 115, 35),
             'Save Game'
         )
+        self.ui_button_save_game = DecoratorAlignedButton(self.ui_button_save_game, right=True)
         self.ui_button_save_game.add_listener_click(self.on_click_save_game)
 
         # Load game button
@@ -230,6 +249,7 @@ class WindowMain:
             Rect(ViewProperties.SCREEN_WIDTH - 120, 81, 115, 35),
             'Load Game'
         )
+        self.ui_button_load_game = DecoratorAlignedButton(self.ui_button_load_game, right=True)
         self.ui_button_load_game.add_listener_click(self.on_click_load_game)
 
         # Do turn button
@@ -237,6 +257,7 @@ class WindowMain:
             Rect(5, 35, 80, 30),
             'Do Turn'
         )
+        self.ui_button_do_turn = DecoratorAlignedButton(self.ui_button_do_turn, left=True)
         self.ui_button_do_turn.add_listener_click(self.execute_turn)
         
         # Undo button
@@ -244,6 +265,7 @@ class WindowMain:
             Rect(5, 68, 60, 25),
             'Undo'
         )
+        self.ui_button_undo = DecoratorAlignedButton(self.ui_button_undo, left=True)
         self.ui_button_undo.add_listener_click(self.on_click_undo_move)
         
         # Redo button
@@ -251,6 +273,7 @@ class WindowMain:
             Rect(5, 95, 60, 25),
             'Redo'
         )
+        self.ui_button_redo = DecoratorAlignedButton(self.ui_button_redo, left=True)
         self.ui_button_redo.add_listener_click(self.on_click_redo_move)
 
         # Add buttons to ui_buttons list
@@ -269,6 +292,7 @@ class WindowMain:
             Rect(5, ViewProperties.SCREEN_HEIGHT - 35, 80, 30),
             'Warrior'
         )
+        self.ui_button_make_warrior = DecoratorAlignedButton(self.ui_button_make_warrior, bottom=True, left=True)
         self.ui_button_make_warrior.add_listener_click(self.on_click_make_warrior)
 
         # Make rider button
@@ -276,6 +300,7 @@ class WindowMain:
             Rect(90, ViewProperties.SCREEN_HEIGHT - 35, 80, 30),
             'Rider'
         )
+        self.ui_button_make_rider = DecoratorAlignedButton(self.ui_button_make_rider, bottom=True)
         self.ui_button_make_rider.add_listener_click(self.on_click_make_rider)
 
         # Make knight button
@@ -283,47 +308,32 @@ class WindowMain:
             Rect(175, ViewProperties.SCREEN_HEIGHT - 35, 80, 30),
             'Knight'
         )
+        self.ui_button_make_knight = DecoratorAlignedButton(self.ui_button_make_knight, bottom=True)
         self.ui_button_make_knight.add_listener_click(self.on_click_make_knight)
 
         self.ui_buttons_make_actor.append(self.ui_button_make_warrior)
         self.ui_buttons_make_actor.append(self.ui_button_make_rider)
         self.ui_buttons_make_actor.append(self.ui_button_make_knight)
 
-        # Tribe turn surface
-        self.font = pygame.font.Font('freesansbold.ttf', 18)
-        self.ui_text_tribe_turn_surface = self.font.render('Tribe: Imperius', True, (255, 255, 255))
-        self.ui_text_tribe_turn = EnumTribe.Imperius
-
-        # background
-        self.ui_text_tribe_turn_background = Surface((160, 28), SRCALPHA)
-        pygame.draw.rect(
-            self.ui_text_tribe_turn_background,
-            color=(25, 24, 26),
-            rect=Rect(0, 0, 160, 28)
-        )
-        pygame.draw.rect(
-            self.ui_text_tribe_turn_background,
-            color=(121, 119, 127),
-            rect=pygame.Rect(3, 3, 160 - 6, 28 - 6)
-        )
-
-        # Turn count surface
-        self.font = pygame.font.Font('freesansbold.ttf', 18)
-        self.ui_text_turn_count_surface = self.font.render('Turn: 0', True, (255, 255, 255))
+        # Turn count text
         self.ui_text_turn_count = 0
+        self.ui_text_turn_count = ComponentButton(
+            Rect(170, 5, 95, 28),
+            f'Turn: {self.ui_text_turn_count}'
+        )
+        self.ui_text_turn_count = DecoratorAlignedButton(self.ui_text_turn_count, top=True)
+        self.ui_text_turn_count = DecoratorUnclickableButton(self.ui_text_turn_count)
+        self.ui_buttons.append(self.ui_text_turn_count)
 
-        # background
-        self.ui_text_turn_count_background = Surface((95, 28), SRCALPHA)
-        pygame.draw.rect(
-            self.ui_text_turn_count_background,
-            color=(25, 24, 26),
-            rect=Rect(0, 0, 95, 28)
+        # Tribe turn text
+        self.ui_text_tribe_turn = EnumTribe.Imperius
+        self.ui_text_tribe_turn = ComponentButton(
+            Rect(5, 5, 160, 28),
+            f'Tribe: {str(self.ui_text_tribe_turn)}'
         )
-        pygame.draw.rect(
-            self.ui_text_turn_count_background,
-            color=(121, 119, 127),
-            rect=pygame.Rect(3, 3, 95 - 6, 28 - 6)
-        )
+        self.ui_text_tribe_turn = DecoratorAlignedButton(self.ui_text_tribe_turn, left=True, top=True)
+        self.ui_text_tribe_turn = DecoratorUnclickableButton(self.ui_text_tribe_turn)
+        self.ui_buttons.append(self.ui_text_tribe_turn)
 
         # Main game loop
         pygame.init()
@@ -354,6 +364,7 @@ class WindowMain:
             pygame.display.flip()
             time.sleep(max(0, 0.016 - delta_time))
 
+    @decorator_try_catch
     def update(self, delta_time):
         # Update actor controllers
         self._controller.update(delta_time)
@@ -386,14 +397,18 @@ class WindowMain:
                 button.move(ViewProperties.toTilePos(building.position.x, building.position.y) + self.camPosition)
                 button.trigger_mouse(mouse_pos, mouse_buttons)
 
+    @decorator_try_catch
     def execute_turn(self, event: EventComponentButton):
         self._controller.execute_turn()
 
+    @decorator_try_catch
     def draw_surface(self, surface: pygame.Surface, x: int, y: int):
         if (x > -ViewProperties.CULL_MARGIN) and (x < (ViewProperties.SCREEN_WIDTH + ViewProperties.CULL_MARGIN)):
             if (y > -ViewProperties.CULL_MARGIN) and (y < (ViewProperties.SCREEN_HEIGHT + ViewProperties.CULL_MARGIN)):
                 self.screen.blit(surface, dest=(x, y))
 
+    @decorator_try_catch
+    @decorator_speed(func_name='draw')
     def draw(self):
         self.screen.fill((0, 0, 0))
 
@@ -450,6 +465,15 @@ class WindowMain:
             if surface != None:
                 self.draw_surface(surface, x, y)
 
+        # Update counter surfaces
+        if self.ui_text_tribe_turn is not self._controller.game.turn_tribe:
+            self.ui_text_tribe_turn.text_surface = self.ui_text_tribe_turn.font.render('Tribe: ' + str(self._controller.game.turn_tribe), True, (255, 255, 255))
+            self.ui_text_tribe_turn = self._controller.game.turn_tribe
+
+        if self.ui_text_turn_count is not self._controller.game.turn:
+            self.ui_text_turn_count.text_surface = self.ui_text_turn_count.font.render('Turn: ' + str(self._controller.game.turn), True, (255, 255, 255))
+            self.ui_text_turn_count = self._controller.game.turn
+
         # Draw UI
         for button in self.ui_buttons:
             button.draw(self.screen)
@@ -457,17 +481,3 @@ class WindowMain:
         if self.ui_button_make_actor_visible:
             for button in self.ui_buttons_make_actor:
                 button.draw(self.screen)
-
-        # Show which tribe's turn it is
-        if self.ui_text_tribe_turn is not self._controller.game.turn_tribe:
-            self.ui_text_tribe_turn_surface = self.font.render('Tribe: ' + self._controller.game.turn_tribe, True, (255, 255, 255))
-            self.ui_text_tribe_turn = self._controller.game.turn_tribe
-        self.draw_surface(self.ui_text_tribe_turn_background, 5, 5)
-        self.draw_surface(self.ui_text_tribe_turn_surface, 10, 10)
-
-        # Show which turn it is
-        if self.ui_text_turn_count is not self._controller.game.turn:
-            self.ui_text_turn_count_surface = self.font.render('Turn: ' + str(self._controller.game.turn), True, (255, 255, 255))
-            self.ui_text_turn_count = self._controller.game.turn
-        self.draw_surface(self.ui_text_turn_count_background, 170, 5)
-        self.draw_surface(self.ui_text_turn_count_surface, 175, 10)

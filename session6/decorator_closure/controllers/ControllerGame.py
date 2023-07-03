@@ -126,7 +126,7 @@ class ControllerGame:
         if len(self.command_redo_stack) > 0:
             command = self.command_redo_stack.pop()
             self.command_undo_stack.append(command)
-            command.execute()
+            command.redo()
 
     def setup_game(self):
         # Remake actor controllers

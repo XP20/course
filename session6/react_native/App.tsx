@@ -75,7 +75,8 @@ function App(): JSX.Element {
       }}/>}
     {currentScreen == 'ScreenUserPictureHooks' && <ScreenUserPictureHooks />}
     <ComponentCalendar
-      default_date={moment().format('YYYYMMDD')}/>
+      default_date={moment().format('YYYYMMDD')}
+      onChangeDate={(date) => {console.log('Changed date to: ' + date)}}/>
   </View>
 
   const isDarkMode = useColorScheme() === 'dark';

@@ -4,7 +4,7 @@ import moment from "moment";
 
 interface Props {
   default_date: string;
-  onChangeDate: () => void;
+  onChangeDate: (date: string) => void;
 }
 
 interface State {
@@ -108,21 +108,6 @@ export function ComponentCalendar(props: Props ) {
     date: props.default_date
   } as State);
 
-  // const load = async () => {
-  //   let defaultUsername = await DeviceInfo.getDeviceName();
-  //   setState({...state, username: defaultUsername});
-  // };
-
-  // useEffect(() => {
-  //   load();
-  //   return () => {
-  //     // Optional unmount
-  //   }
-  // }, [
-  //   // Vars / hooks that trigger function
-  //   // If null, trigger once
-  // ]);
-
   function getFirstDate(date: string): string {
     let firstDate = moment(date, format).startOf('month');
     let firstMonday = firstDate.startOf('isoWeek');
@@ -152,6 +137,7 @@ export function ComponentCalendar(props: Props ) {
 
   const onPressDate = (date: string) => {
     setState({date: date});
+    props.onChangeDate(state.date);
   }
 
   let days_of_week = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];

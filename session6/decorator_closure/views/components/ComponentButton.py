@@ -6,25 +6,33 @@ import pygame
 from models.Vector2D import Vector2D
 from views.components.EventComponentButton import EventComponentButton
 
-hover = (87, 85, 92)
-press = (51, 50, 54)
-up = (121, 119, 127)
-border = (25, 24, 26)
-
 class ComponentButton:
-    def __init__(self, rect: Rect, text: str, linked_object: object = None, linked_enum: object = None):
+    def __init__(self, 
+                 rect: Rect, 
+                 text: str, 
+                 linked_object: object = None, 
+                 linked_enum: object = None, 
+                 hover = (87, 85, 92), 
+                 press = (51, 50, 54), 
+                 up = (121, 119, 127), 
+                 border = (25, 24, 26)):
         self.button_rect = rect
-        self.button_up = Surface((rect.width, rect.height), SRCALPHA)
+
+        self.hover = hover
+        self.press = press
+        self.up = up
+        self.border = border
 
         # self.status == 0
+        self.button_up = Surface((rect.width, rect.height), SRCALPHA)
         pygame.draw.rect(
             self.button_up,
-            color=border,
+            color=self.border,
             rect=Rect(0, 0, rect.width, rect.height)
         )
         pygame.draw.rect(
             self.button_up,
-            color=up,
+            color=self.up,
             rect=pygame.Rect(3, 3, rect.width - 6, rect.height - 6)
         )
 
@@ -32,12 +40,12 @@ class ComponentButton:
         self.button_hover = Surface((rect.width, rect.height), SRCALPHA)
         pygame.draw.rect(
             self.button_hover,
-            color=border,
+            color=self.border,
             rect=Rect(0, 0, rect.width, rect.height)
         )
         pygame.draw.rect(
             self.button_hover,
-            color=hover,
+            color=self.hover,
             rect=pygame.Rect(3, 3, rect.width - 6, rect.height - 6)
         )
 
@@ -45,12 +53,12 @@ class ComponentButton:
         self.button_press = Surface((rect.width, rect.height), SRCALPHA)
         pygame.draw.rect(
             self.button_press,
-            color=border,
+            color=self.border,
             rect=Rect(0, 0, rect.width, rect.height)
         )
         pygame.draw.rect(
             self.button_press,
-            color=press,
+            color=self.press,
             rect=pygame.Rect(3, 3, rect.width - 6, rect.height - 6)
         )
 
@@ -59,10 +67,17 @@ class ComponentButton:
         self.linked_enum = linked_enum
 
         self.font = pygame.font.Font('freesansbold.ttf', 18)
-        self.text = self.font.render(text, True, (255, 255, 255))
+        self.text = text
+        self.text_surface = self.font.render(self.text, True, (255, 255, 255))
 
         self.was_clicked = False
         self.listeners_click: List[callable] = []
+
+    def set_linked_object(self, linked_object: object):
+        self.linked_object = linked_object
+
+    def set_linked_enum(self, linked_enum: object):
+        self.linked_enum = linked_enum
 
     def draw(self, surface: Surface):
         button_surface: Surface
@@ -79,7 +94,7 @@ class ComponentButton:
             (self.button_rect.x, self.button_rect.y)
         )
         surface.blit(
-            self.text,
+            self.text_surface,
             (self.button_rect.x + 4, self.button_rect.y + 4)
         )
 

@@ -19,3 +19,6 @@ class CommandActorMove(ICommand):
         for actor in self.game.actors:
             if actor.uuid == self.actor_uuid:
                 actor.position = self.position_before
+
+    def redo(self):
+        self.execute()
