@@ -78,53 +78,6 @@ function App(): JSX.Element {
       default_date={moment().format('YYYYMMDD')}
       onChangeDate={(date) => {console.log('Changed date to: ' + date)}}/>
   </View>
-
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  const [myDeviceId, setMyDeviceId] = useState('none');
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Button
-            title={'test'}
-            onPress={async () => {
-              let uuid = await DeviceInfo.getUniqueId();
-              setMyDeviceId(uuid);
-              console.log('test', uuid); // Debug not working
-            }}></Button>
-          <Section title="Step One">
-            My Device ID: <Text style={styles.highlight}>{myDeviceId}</Text>
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
 }
 
 const styles = StyleSheet.create({
