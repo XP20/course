@@ -53,6 +53,16 @@ class ControllerGame:
             EnumActor.Rider: ControllerActorRider,
             EnumActor.Knight: ControllerActorKnight,
         }
+    
+    @property
+    def actor_controllers(self):
+        return self._actor_controllers
+    
+    def add_actor_controller(self, actor_controller: IControllerActor):
+        self._actor_controllers.append(actor_controller)
+
+    def remove_actor_controller(self, actor_controller: IControllerActor):
+        self._actor_controllers.remove(actor_controller)
 
     def new_game(self):
         random.seed(time.time())

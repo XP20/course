@@ -106,7 +106,7 @@ class WindowMain:
     @decorator_try_catch
     def make_actor_buttons(self):
         self.actor_buttons.clear()
-        for actor_cont in self._controller._actor_controllers:
+        for actor_cont in self._controller.actor_controllers:
             actor = actor_cont.actor
             actor_uuid = str(actor.uuid)
 
@@ -381,7 +381,7 @@ class WindowMain:
                 button.trigger_mouse(mouse_pos, mouse_buttons)
 
         # Move actor buttons
-        for controller in self._controller._actor_controllers:
+        for controller in self._controller.actor_controllers:
             actor = controller.actor
             actor_uuid = str(actor.uuid)
             button = self.actor_buttons[actor_uuid]
@@ -435,7 +435,7 @@ class WindowMain:
                 self.draw_surface(tileSurface, endX, endY)
 
         # Render buildings + actors
-        for elem in (self._game.buildings + self._controller._actor_controllers):
+        for elem in (self._game.buildings + self._controller.actor_controllers):
             surface = None
             x = 0
             y = 0
@@ -452,7 +452,7 @@ class WindowMain:
 
                 factory = self.resource_factories_by_tribes[tribe]
                 surface = factory.get_building(building_type, level)
-            elif elem in self._controller._actor_controllers:
+            elif elem in self._controller.actor_controllers:
                 actor = elem.actor
                 actor_type = actor.actor_type
                 tribe = actor.tribe
