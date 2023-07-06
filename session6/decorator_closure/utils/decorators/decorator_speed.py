@@ -8,6 +8,6 @@ def decorator_speed(func_name):
             func(*args, **kwargs)
             after = time.monotonic_ns()
             diff = (after - before) / 1000000
-            logger.debug(f'{func_name} took: {str(diff)}ms')
+            logger.debug(f'{func_name} took: {diff}ms')
         return wrapper
     return decorator_real

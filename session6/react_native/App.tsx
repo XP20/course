@@ -26,8 +26,6 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-import DeviceInfo from "react-native-device-info";
-import { ScreenUserRegister } from "./src/views/screens/ScreenUserRegister";
 import { ScreenUserRegisterHooks } from "./src/views/screens/ScreenUserRegisterHooks";
 import { ScreenUserPictureHooks } from "./src/views/screens/ScreenUserPictureHooks";
 import { ComponentCalendar } from "./src/views/components/ComponentCalendar";
@@ -64,10 +62,10 @@ function Section({children, title}: SectionProps): JSX.Element {
 }
 
 function App(): JSX.Element {
-  // return <ScreenUserRegister/>;
   const [currentScreen, setCurrentScreen] = useState('ScreenUserRegisterHooks');
 
   return <View style={{flex: 1}}>
+    <Text>Test</Text>
     {currentScreen == 'ScreenUserRegisterHooks' && <ScreenUserRegisterHooks
       default_email={'default@test.com'}
       onRegisterDone={() => {
@@ -75,8 +73,8 @@ function App(): JSX.Element {
       }}/>}
     {currentScreen == 'ScreenUserPictureHooks' && <ScreenUserPictureHooks />}
     <ComponentCalendar
-      default_date={moment().format('YYYYMMDD')}
-      onChangeDate={(date) => {console.log('Changed date to: ' + date)}}/>
+      default_date={moment()}
+      onChangeDate={(date) => {console.log('Changed date to: ' + date.format('YYYYMMDD'))}}/>
   </View>
 }
 

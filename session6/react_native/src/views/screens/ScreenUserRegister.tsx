@@ -84,23 +84,23 @@ export class ScreenUserRegister extends React.Component<Props, State> {
     return (
       <View style={styles.fullView}>
         <Text style={styles.errorMessage}>{error_message}</Text>
-        <TextInput placeholder={'User'}
+        <TextInput placeholder='User'
                    value={this.state.username}
                    onChangeText={text => this.setState({username: text})}
                    style={styles.textInput}></TextInput>
-        <TextInput placeholder={'Email'}
+        <TextInput placeholder='Email'
                    value={this.state.email}
-                   textContentType={'emailAddress'}
-                   keyboardType={"email-address"}
+                   textContentType='emailAddress'
+                   keyboardType='email-address'
                    onChangeText={text => this.setState({email: text})}
                    style={styles.textInput}></TextInput>
-        <TextInput placeholder={'Password'}
+        <TextInput placeholder='Password'
                    value={this.state.password}
                    secureTextEntry={true}
-                   textContentType={'password'}
+                   textContentType='password'
                    onChangeText={text => this.setState({password: text})}
                    style={styles.textInput}></TextInput>
-        <Button title={'Register'} onPress={this.registerUser}></Button>
+        <Button title='Register' onPress={this.registerUser}></Button>
       </View>
     )
   }

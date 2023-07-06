@@ -92,23 +92,23 @@ export function ScreenUserRegisterHooks(props: Props ) {
   return (
     <View style={styles.fullView}>
       <Text style={styles.errorMessage}>{error_message}</Text>
-      <TextInput placeholder={'User'}
+      <TextInput placeholder='User'
                  value={state.username}
                  onChangeText={text => setState({...state, username: text})}
                  style={styles.textInput}></TextInput>
-      <TextInput placeholder={'Email'}
+      <TextInput placeholder='Email'
                  value={state.email}
-                 textContentType={'emailAddress'}
-                 keyboardType={"email-address"}
+                 textContentType='emailAddress'
+                 keyboardType='email-address'
                  onChangeText={text => setState({...state, email: text})}
                  style={styles.textInput}></TextInput>
-      <TextInput placeholder={'Password'}
+      <TextInput placeholder='Password'
                  value={state.password}
                  secureTextEntry={true}
-                 textContentType={'password'}
+                 textContentType='password'
                  onChangeText={text => setState({...state, password: text})}
                  style={styles.textInput}></TextInput>
-      <Button title={'Register'} onPress={registerUser}></Button>
+      <Button title='Register' onPress={registerUser}></Button>
     </View>
   )
 }
