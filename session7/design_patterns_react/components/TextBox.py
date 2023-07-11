@@ -6,6 +6,11 @@ from events.EventKey import EventKey
 from events.EventMouse import EventMouse
 from react.Component import Component
 
+INPUT_CODE_START = 32
+INPUT_CODE_END = 126
+INPUT_SPACE_MATCH = 'space'
+INPUT_SPACE_REPLACE = ' '
+
 @dataclass
 class Props(components.TextField.Props):
     color_border: Tuple = (0, 0, 0)
@@ -20,6 +25,8 @@ class State:
 class TextBox(Component):
     def __init__(self, props):
         super().__init__(props)
+
+        self.props: Props = props
         self.state = State(
             text=self.props.text,
             focused=False,
@@ -61,30 +68,26 @@ class TextBox(Component):
 
     def onKeyDown(self, event: EventKey):
         if self.state.focused:
+            text = ''
             if event.key_code == pygame.K_BACKSPACE:
                 text_len = len(self.state.text)
                 if text_len > 0:
                     text = self.state.text[:-1]
-                    self.setState(
-                        State(
-                            text=text,
-                            focused=self.state.focused
-                        )
-                    )
-            elif 32 <= event.key_code <= 126:
+            elif INPUT_CODE_START <= event.key_code <= INPUT_CODE_END:
                 text: str = self.state.text
                 char: str = event.key_name
 
-                if char == 'space':
-                    char = ' '
+                if char == INPUT_SPACE_MATCH:
+                    char = INPUT_SPACE_REPLACE
 
                 text += char
-                self.setState(
-                    State(
-                        text=text,
-                        focused=self.state.focused
-                    )
+
+            self.setState(
+                State(
+                    text=text,
+                    focused=self.state.focused
                 )
+            )
 
     def draw(self, screen):
         if self.shouldComponentUpdate(self.props, self.state):

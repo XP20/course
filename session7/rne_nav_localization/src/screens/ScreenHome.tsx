@@ -36,7 +36,7 @@ export function ScreenHome({ navigation, route }) {
       <View style={styles.view}>
         {habits.map((habit: Habit, index: number) => (
           <ListItem.Swipeable
-            key={'ListItemSwipeable' + index}
+            key={`ListItemSwipeable${index}`}
             rightContent={(reset) => (
               <Button
                 title={strings.button_delete_habit}

@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 from typing import Tuple, List
 import pygame
@@ -29,7 +30,8 @@ class TextField(Component):
         text_width, text_height = font.size(text)
         max_text_width = self.props.width - 15
 
-        while text_width > max_text_width:
+        loop_times = math.floor(text_width / max_text_width)
+        for _ in range(loop_times):
             # Getting a line
             current_selected = ''
             chars_counted = 0
@@ -41,10 +43,9 @@ class TextField(Component):
                 current_selected += char
                 chars_counted += 1
 
-            # Add line and recalculate width
+            # Add line
             text_lines.append(current_selected)
             text = text[chars_counted:]
-            text_width, text_height = font.size(text)
 
         text_lines.append(text)
         return text_lines
