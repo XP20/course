@@ -11,7 +11,11 @@ export const strings = new LocalizedStrings({
     settings_title: 'Settings',
     add_habit_title: 'Add new habit',
     default_habit_title: 'Habit',
-    button_delete_habit: 'Delete'
+    button_delete_habit: 'Delete',
+    text_user: 'User',
+    input_username_placeholder: 'Username',
+    input_password_placeholder: 'Password',
+    button_login: 'Login',
   },
   'lv': {
     button_add_habit: 'Pievienot paradamu',
@@ -22,11 +26,15 @@ export const strings = new LocalizedStrings({
     settings_title: 'Iestatījumi',
     add_habit_title: 'Pievienot jaunu paradumu',
     default_habit_title: 'Paradums',
-    button_delete_habit: 'Dzēst'
+    button_delete_habit: 'Dzēst',
+    text_user: 'Lietotājs',
+    input_username_placeholder: 'Lietotājs',
+    input_password_placeholder: 'Parole',
+    button_login: 'Pieslēgties',
   }
 })
 
 export const ContextStrings = createContext({
-  currentLanguage: strings.getLanguage(),
+  currentLanguage: '',
   setCurrentLanguage: (string: string) => {}
 });
