@@ -37,9 +37,10 @@ def action_chat_undo_message(messages: List[str]):
 def action_chat_change_caps(messages: List[str], uppercase: bool):
     modified_messages = messages.copy()
     for i, message in enumerate(modified_messages):
-        modified_message = message.lower()
         if uppercase:
             modified_message = message.upper()
+        else:
+            modified_message = message.lower()
         modified_messages[i] = modified_message
 
     return {
@@ -49,10 +50,8 @@ def action_chat_change_caps(messages: List[str], uppercase: bool):
 
 def action_chat_delete_message(messages: List[str], message: str):
     messages_updated = messages.copy()
-    try:
+    if message in messages_updated:
         messages_updated.remove(message)
-    except ValueError as Exc:
-        logger.log(Exc)
 
     return {
         'type': ActionsChat.CHAT_DELETE_MESSAGE,

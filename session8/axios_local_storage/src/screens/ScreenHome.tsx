@@ -26,12 +26,12 @@ const styles = StyleSheet.create({
 });
 
 function dateFormat(date: Date) {
-  let date_String = date.getFullYear() + "/" +
+  let date_string = date.getFullYear() + "/" +
     (date.getMonth() + 1) + "/" +
     + date.getDate() + " " +
     + date.getHours() + ":" +
     + date.getMinutes();
-  return date_String;
+  return date_string;
 }
 
 // @ts-ignore
@@ -49,15 +49,20 @@ export function ScreenHome({ navigation, route }) {
   const [user, setUser] = useState(default_user);
   const [isLoading, setIsLoading] = useState(false);
 
+  const load = async () => {
+    try {
+      let userJSON = await AsyncStorage.getItem('user');
+      if (userJSON != null) {
+        let userRestored = JSON.parse(userJSON);
+        setUser(userRestored);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   useEffect(() => {
     try {
-      async function load() {
-        let userJSON = await AsyncStorage.getItem('user');
-        if (userJSON != null) {
-          let userRestored = JSON.parse(userJSON);
-          setUser(userRestored);
-        }
-      }
       load();
     } catch (e) {
       console.error(e);
@@ -146,6 +151,14 @@ export function ScreenHome({ navigation, route }) {
     }
   }
 
+  const onDeleteHabit = (habits: Habit[], habit_id: string) => {
+    let newHabits = _.clone(habits);
+    _.remove(newHabits,
+      (removeHabit: Habit) =>
+        removeHabit.id == habit_id);
+    setHabits(newHabits);
+  }
+
   return (
     <View style={styles.view}>
       {user.is_logged ?
@@ -158,11 +171,7 @@ export function ScreenHome({ navigation, route }) {
                   title={strings.button_delete_habit}
                   key={'Button' + index}
                   onPress={() => {
-                    let newHabits = _.clone(habits);
-                    _.remove(newHabits,
-                      (removeHabit: Habit) =>
-                        removeHabit.id == habit.id);
-                    setHabits(newHabits);
+                    onDeleteHabit(habits, habit.id);
                   }}
                   icon={{ name: 'delete', color: 'white' }}
                   buttonStyle={{ minHeight: '100%', backgroundColor: 'red' }}
@@ -188,7 +197,7 @@ export function ScreenHome({ navigation, route }) {
             style={{marginHorizontal: 20}}
             placeholder={strings.input_username_placeholder}
             value={user.username}
-            onChangeText={text => setUser({...user, username: text})} />
+            onChangeText={text => setUser({...user, username: text.trim()})} />
           <Input
             style={{marginHorizontal: 20}}
             placeholder={strings.input_password_placeholder}
@@ -196,7 +205,9 @@ export function ScreenHome({ navigation, route }) {
             textContentType='password'
             secureTextEntry={true}
             onChangeText={text => setPassword(text)} />
-          <Button buttonStyle={{margin: 20}} onPress={onLogin}>{isLoading && <ActivityIndicator size='small' color='white' />}
+          <Button buttonStyle={{margin: 20}} onPress={onLogin}>{isLoading &&
+              <ActivityIndicator size='small' color='white' />
+            }
             {strings.button_login}
           </Button>
         </View>

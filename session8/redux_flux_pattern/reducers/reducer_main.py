@@ -19,10 +19,11 @@ def reducer_main(state, action):
             'messages': action['payload']
         })
     elif action['type'] == ActionsChat.CHAT_UNDO_MESSAGE:
-        last_action = state['actions'].pop() # ???? undo_chat_message
+        last_action = state['actions'].pop()
 
         state.update({
-            'messages': action['payload']
+            'messages': action['payload'],
+            'undo_actions': state['undo_actions'] + [last_action]
         })
     elif action['type'] == ActionsChat.CHAT_CHANGE_CAPS:
         state.update({
@@ -34,7 +35,7 @@ def reducer_main(state, action):
         })
 
     state.update({
-        'actions': state['actions'] + [action]
+        'actions': state['actions'] + [action],
     })
 
     return state
