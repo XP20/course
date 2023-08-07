@@ -1,0 +1,15 @@
+export interface CarDataRaw {
+  idx: string,
+  price: string,
+  brand: string,
+  model: string,
+  year: string,
+  title_status: string,
+  mileage: string,
+  color: string,
+  vin: string,
+  lot: string,
+  state: string,
+  country: string,
+  condition: string,
+}

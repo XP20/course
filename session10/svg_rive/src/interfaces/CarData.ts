@@ -1,0 +1,15 @@
+export interface CarData {
+  idx: number,
+  price: number,
+  brand: string,
+  model: string,
+  year: number,
+  title_status: string,
+  mileage: number,
+  color: string,
+  vin: string,
+  lot: string,
+  state: string,
+  country: string,
+  condition: string,
+}
