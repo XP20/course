@@ -1,10 +1,10 @@
-export interface CarDataRaw {
-  idx: string,
+export interface CarRaw {
+  car_id: string,
   price: string,
   brand: string,
   model: string,
   year: string,
-  title_status: string,
+  status: string,
   mileage: string,
   color: string,
   vin: string,

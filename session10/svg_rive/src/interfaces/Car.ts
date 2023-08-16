@@ -1,10 +1,10 @@
-export interface CarData {
-  idx: number,
+export interface Car {
+  car_id: number,
   price: number,
   brand: string,
   model: string,
   year: number,
-  title_status: string,
+  status: string,
   mileage: number,
   color: string,
   vin: string,

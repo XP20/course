@@ -1,6 +1,6 @@
 import { Position } from "./Position";
 
-export interface LabeledData {
-  data: Position[],
+export interface LabeledPositions {
+  positions: Position[],
   labels: string[]
 }
