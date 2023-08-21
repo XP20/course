@@ -1,0 +1,405 @@
+{
+	"components": {
+		"examples": {},
+		"headers": {},
+		"parameters": {},
+		"requestBodies": {},
+		"responses": {},
+		"schemas": {
+			"ResponseSendListing": {
+				"properties": {
+					"is_success": {
+						"type": "boolean"
+					},
+					"list_id": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"is_success",
+					"list_id"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RequestSendListing": {
+				"properties": {
+					"session_token": {
+						"type": "string"
+					},
+					"make": {
+						"type": "string"
+					},
+					"year": {
+						"type": "number",
+						"format": "double"
+					},
+					"mileage": {
+						"type": "number",
+						"format": "double"
+					},
+					"description": {
+						"type": "string"
+					},
+					"price": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"session_token",
+					"make",
+					"year",
+					"mileage",
+					"description",
+					"price"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DbListing": {
+				"properties": {
+					"list_id": {
+						"type": "number",
+						"format": "double"
+					},
+					"make": {
+						"type": "string"
+					},
+					"year": {
+						"type": "number",
+						"format": "double"
+					},
+					"mileage": {
+						"type": "number",
+						"format": "double"
+					},
+					"description": {
+						"type": "string"
+					},
+					"price": {
+						"type": "number",
+						"format": "double"
+					},
+					"created": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"user_id": {
+						"type": "number",
+						"format": "double"
+					},
+					"is_deleted": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"list_id",
+					"make",
+					"year",
+					"mileage",
+					"description",
+					"price",
+					"created",
+					"user_id",
+					"is_deleted"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ResponseGetListing": {
+				"properties": {
+					"is_success": {
+						"type": "boolean"
+					},
+					"form": {
+						"$ref": "#/components/schemas/DbListing"
+					}
+				},
+				"required": [
+					"is_success",
+					"form"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RequestGetListing": {
+				"properties": {
+					"session_token": {
+						"type": "string"
+					},
+					"list_id": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"session_token",
+					"list_id"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ResponseGetListingPdf": {
+				"properties": {
+					"is_success": {
+						"type": "boolean"
+					},
+					"url": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"is_success",
+					"url"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RequestGetListingPdf": {
+				"properties": {
+					"session_token": {
+						"type": "string"
+					},
+					"list_id": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"session_token",
+					"list_id"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ResponseLogin": {
+				"properties": {
+					"session_token": {
+						"type": "string"
+					},
+					"is_success": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"session_token",
+					"is_success"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RequestLogin": {
+				"properties": {
+					"username": {
+						"type": "string"
+					},
+					"password": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"username",
+					"password"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ResponseRegister": {
+				"properties": {
+					"is_success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"is_success",
+					"code"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RequestRegister": {
+				"properties": {
+					"username": {
+						"type": "string"
+					},
+					"password": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"username",
+					"password"
+				],
+				"type": "object",
+				"additionalProperties": false
+			}
+		},
+		"securitySchemes": {}
+	},
+	"info": {
+		"title": "session_4_backend_leftovers",
+		"version": "1.0.0",
+		"license": {
+			"name": "ISC"
+		},
+		"contact": {}
+	},
+	"openapi": "3.0.0",
+	"paths": {
+		"/listings/add": {
+			"post": {
+				"operationId": "AddListing",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ResponseSendListing"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RequestSendListing"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/listings/get": {
+			"post": {
+				"operationId": "GetListing",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ResponseGetListing"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RequestGetListing"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/listings/getpdf": {
+			"post": {
+				"operationId": "GetListingPdf",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ResponseGetListingPdf"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RequestGetListingPdf"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/user/login": {
+			"post": {
+				"operationId": "Login",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ResponseLogin"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RequestLogin"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/user/register": {
+			"post": {
+				"operationId": "Register",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ResponseRegister"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RequestRegister"
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"servers": [
+		{
+			"url": "/"
+		}
+	]
+}

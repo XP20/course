@@ -1,0 +1,204 @@
+{
+	"components": {
+		"examples": {},
+		"headers": {},
+		"parameters": {},
+		"requestBodies": {},
+		"responses": {},
+		"schemas": {
+			"ResponseSendAttachment": {
+				"properties": {
+					"is_success": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"is_success"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ResponseLogin": {
+				"properties": {
+					"session_token": {
+						"type": "string"
+					},
+					"is_success": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"session_token",
+					"is_success"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RequestLogin": {
+				"properties": {
+					"username": {
+						"type": "string"
+					},
+					"password": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"username",
+					"password"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ResponseRegister": {
+				"properties": {
+					"is_success": {
+						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"is_success",
+					"code"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RequestRegister": {
+				"properties": {
+					"username": {
+						"type": "string"
+					},
+					"password": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"username",
+					"password"
+				],
+				"type": "object",
+				"additionalProperties": false
+			}
+		},
+		"securitySchemes": {}
+	},
+	"info": {
+		"title": "session_4_backend_leftovers",
+		"version": "1.0.0",
+		"license": {
+			"name": "ISC"
+		},
+		"contact": {}
+	},
+	"openapi": "3.0.0",
+	"paths": {
+		"/attachments/upload": {
+			"post": {
+				"operationId": "Upload",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ResponseSendAttachment"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"request_json": {
+										"type": "string"
+									},
+									"attachment_file": {
+										"type": "string",
+										"format": "binary"
+									}
+								},
+								"required": [
+									"request_json",
+									"attachment_file"
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		"/user/login": {
+			"post": {
+				"operationId": "Login",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ResponseLogin"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RequestLogin"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/user/register": {
+			"post": {
+				"operationId": "Register",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ResponseRegister"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RequestRegister"
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"servers": [
+		{
+			"url": "/"
+		}
+	]
+}

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Car Listing</title>
+    </head>
+    <body style="display: flex; flex-direction: column; align-items: center; max-width: 360px; margin: auto;">
+        <h1 style="font-size: 40px;">Car Listing</h1>
+        {{#each details}}
+        <div style="display: flex; flex-direction: row; width: 100%; justify-content: space-between;">
+            <h5 style="font-weight: normal; font-size: 20px;">{{this.label}}: {{this.value}}</h5>
+        </div>
+        {{/each}}
+    </body>
+</html>

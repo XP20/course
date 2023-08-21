@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "*": [
+        "node_modules/*"
+      ]
+    },
+    "module": "commonjs",
+    "target": "es6",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "strictNullChecks": false,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noFallthroughCasesInSwitch": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "noUnusedLocals": false,
+    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "baseUrl": "src",
+    "jsx": "react-jsx",
+    "preserveSymlinks": true,
+    "checkJs": false
+  },
+  "exclude": [
+    "node_modules",
+    "src/resources/**",
+  ],
+}
